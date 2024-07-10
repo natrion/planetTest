@@ -1,0 +1,184 @@
+#pragma kernel VertexGive
+
+float gridSize;
+float2 posOnSphere;
+float planeLength;
+float planetR;
+
+// New parameters for generateComplexGradientNoise
+float freqency = 1.0f;
+int iterations = 5;
+float iterationSize = 2.0f;
+float power = 2.0f;
+float Intensity = 2.0f;
+int whatSide = 1;
+
+RWStructuredBuffer<float3> positions;
+RWStructuredBuffer<float3> normals;
+RWStructuredBuffer<float2> UVs;
+
+float hash(float3 p) {
+    p = float3(dot(p, float3(127.1, 311.7, 74.7)),
+               dot(p, float3(269.5, 183.3, 246.1)),
+               dot(p, float3(113.5, 271.9, 124.6)));
+    return frac(sin(dot(p, float3(1.0, 1.0, 1.0))) * 43758.5453);
+}
+
+// Gradient Noise function
+float GenerateGradientNoise(float3 p) {
+    float3 i = floor(p);
+    float3 f = frac(p);
+
+    // Compute gradients at the cube's corners
+    float n000 = hash(i + float3(0, 0, 0));
+    float n100 = hash(i + float3(1, 0, 0));
+    float n010 = hash(i + float3(0, 1, 0));
+    float n110 = hash(i + float3(1, 1, 0));
+    float n001 = hash(i + float3(0, 0, 1));
+    float n101 = hash(i + float3(1, 0, 1));
+    float n011 = hash(i + float3(0, 1, 1));
+    float n111 = hash(i + float3(1, 1, 1));
+
+    // Interpolate between the gradients
+    float3 fade_xyz = f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
+    float n00 = lerp(n000, n100, fade_xyz.x);
+    float n01 = lerp(n001, n101, fade_xyz.x);
+    float n10 = lerp(n010, n110, fade_xyz.x);
+    float n11 = lerp(n011, n111, fade_xyz.x);
+    float n0 = lerp(n00, n10, fade_xyz.y);
+    float n1 = lerp(n01, n11, fade_xyz.y);
+    float n = lerp(n0, n1, fade_xyz.z);
+
+    return n;
+}
+float3x3 ComputePerpendicularVectors(float3 originalVector)
+{
+    float3 perpVector1;
+    float3 perpVector2;
+
+    // Calculate perpendicular vectors
+    if (abs(originalVector.x) < abs(originalVector.y))
+    {
+        perpVector1 = float3(1.0, -originalVector.z, 0.0);
+    }
+    else
+    {
+        perpVector1 = float3(-originalVector.y, 0.0, originalVector.x);
+    }
+
+    perpVector1 = normalize(perpVector1);
+
+    // Calculate second perpendicular vector
+    perpVector2 = cross(originalVector, perpVector1);
+
+    // Form the matrix
+    float3x3 matrixSpace;
+    matrixSpace[0] = perpVector1;
+    matrixSpace[1] = perpVector2;
+    matrixSpace[2] = originalVector; // Keep original vector as the third row/column if needed
+
+    return matrixSpace;
+}
+
+float generateComplexGradientNoise(float3 pos, float frequency, int iterations, float iterationSize, float power, float intensity) {
+
+    float gradientNoiseValue = 0.0;
+
+    float mountenrelativeSize = 1.0;
+    float mountenrelativeDistortion = 1.0;
+
+    for (int i = 0; i < iterations; i++) {         
+        float gradientNoiseValuePlus = GenerateGradientNoise(pos * frequency * mountenrelativeDistortion) * mountenrelativeSize;
+        
+        gradientNoiseValue += pow(abs( gradientNoiseValuePlus), power);
+
+        mountenrelativeSize /= iterationSize;
+        mountenrelativeDistortion *= iterationSize;
+    }
+    
+    return gradientNoiseValue * intensity;
+}
+
+float3 CalculatePosOnPlanet(float3 pos) {
+    float3 SpherePosition = normalize(pos) * planetR;
+
+    float gradientNoise = generateComplexGradientNoise(SpherePosition, freqency, iterations, iterationSize, power,Intensity);
+    return SpherePosition * (1 + (gradientNoise / planetR));
+}
+
+float3 CalculateNormalDir(float3 finalPos)
+{
+    if(finalPos.y >-1*planeLength/gridSize &   finalPos.y <planeLength/gridSize )
+    {
+        return normalize(finalPos);
+    }
+    float delta = 0.001f; // Small delta for finite differences
+
+    // Step 1: Normalize finalPos
+    float3 normalizedFinalPos = normalize( finalPos);
+
+    // Step 2: Calculate two perpendicular directions
+    float3 dir1 = float3(1.0f, 0.0f, 0.0f); // Choose an arbitrary perpendicular direction
+    float3 dir2 = cross(normalizedFinalPos, dir1);
+    dir2 = normalize(dir2); // Ensure dir2 is normalized
+
+    // Step 3: Convert local space positions to world space
+    float3 worldPos1 = finalPos + float3(0.0f, 0.0f, delta);
+    float3 worldPos2 = finalPos + float3(delta, 0.0f, 0.0f);
+
+    // Step 4: Calculate positions on the planet (Assuming CalculatePosOnPlanet is defined elsewhere)
+    float3 planetPos1 = CalculatePosOnPlanet(worldPos1);
+    float3 planetPos2 = CalculatePosOnPlanet(worldPos2);
+
+    // Step 5: Calculate vectors from finalPos to the positions on the planet
+    float3 vec1 = planetPos1 - finalPos;
+    float3 vec2 = planetPos2 - finalPos;
+
+    // Step 6: Calculate a vector perpendicular to vec1 and vec2
+    float3 normal = cross(vec1, vec2);
+    normal = normalize(normal); // Normalize the resulting normal vector
+    
+    return normalize( normal * (finalPos.y/ abs( finalPos.y)));
+}
+
+[numthreads(16, 16, 1)]
+void VertexGive(uint3 id : SV_DispatchThreadID) {
+    float index = id.x * gridSize + id.y;
+    float3 CubePosition = float3(0, 0, 0); // Initialize CubePosition
+
+    switch (whatSide) {
+        case 1:
+            CubePosition = float3((id.x - gridSize / 2), 0, (id.y - gridSize / 2));
+            CubePosition = (CubePosition / gridSize) * planeLength + float3(posOnSphere.x , planetR, posOnSphere.y ) - float3(0,planeLength/gridSize,0);
+            break;
+
+        case 2:
+            CubePosition = float3((id.x - gridSize / 2), 0, (id.y - gridSize / 2));
+            CubePosition = (CubePosition / gridSize) * planeLength + float3(posOnSphere.x , -planetR, posOnSphere.y );
+            break;
+
+        case 3:
+            CubePosition = float3((id.x - gridSize / 2), (id.y - gridSize / 2), 0);
+            CubePosition = (CubePosition / gridSize) * planeLength + float3(posOnSphere.x, posOnSphere.y , -planetR)+ float3(0,0,planeLength/gridSize/10);
+            break;
+
+        case 4:
+            CubePosition = float3((id.x - gridSize / 2), (id.y - gridSize / 2), 0);
+            CubePosition = (CubePosition / gridSize) * planeLength + float3(posOnSphere.x, posOnSphere.y , planetR)- float3(0,0,planeLength/gridSize);
+            break;
+
+        case 5:
+            CubePosition = float3(0, (id.x - gridSize / 2), (id.y - gridSize / 2));
+            CubePosition = (CubePosition / gridSize) * planeLength + float3(-planetR, posOnSphere.x, posOnSphere.y + 0.5f);
+            break;
+
+        default:
+            CubePosition = float3(0, (id.x - gridSize / 2), (id.y - gridSize / 2));
+            CubePosition = (CubePosition / gridSize) * planeLength + float3(planetR, posOnSphere.x , posOnSphere.y + 0.5f)- float3(planeLength/gridSize,0,0);
+            break;
+    }
+
+    positions[index] = CalculatePosOnPlanet(CubePosition);
+    normals[index] = lerp( CalculateNormalDir(positions[index]) ,normalize(positions[index]), 0.5f);
+    UVs[index] = float2(id.x, id.y);
+}
