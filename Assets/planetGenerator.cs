@@ -10,7 +10,8 @@ using UnityEngine.UI;
 using System.Threading.Tasks;
 public class PlanetGenerator : MonoBehaviour
 {
-    [SerializeField] private static GameObject cube;
+    [SerializeField] private float MinChunkSizeNonStatic;
+    private static float MinChunkSize;
     [SerializeField] private  GameObject cubeNonStat;
     [SerializeField] private PlanetData onePlanetData;
     [SerializeField] private Planet planet;
@@ -31,7 +32,7 @@ public class PlanetGenerator : MonoBehaviour
 
     void Start()
     {
-        cube = cubeNonStat;
+        
         StartImporantvariables();
 
         planet = new Planet(onePlanetData);
@@ -56,6 +57,7 @@ public class PlanetGenerator : MonoBehaviour
     }
     public void StartImporantvariables()
     {
+        MinChunkSize = MinChunkSizeNonStatic;
         player = playerNostatic;
         computeShader = computeShaderNostatic;
         planeMaterial = planeMaterialNostatic;
@@ -139,17 +141,27 @@ public class PlanetGenerator : MonoBehaviour
 
         public void loadChunks(PlanetData planet)
         {
+            
+            
+            float newchunkSize = chunkSize / (float)chunkInChunkSideNum;
+
+            if (newchunkSize < MinChunkSize)
+            {
+                return;
+            }
+
+            Vector2 newchunks2Dpositions = chunkPos - (chunkSize / 2) * Vector2.one + (newchunkSize / 2) * Vector2.one;
+
+           
+            float newChunkToFirstChunkExponent = CalculateExponent(newchunkSize, chunkInChunkSideNum, planet.planetR * 2);
+
+            float ChunkSpawnDistance = DivideNTimesUsingLog(chunkGeneratingDistance, chunkGeneratingDistanceFallof, Mathf.RoundToInt( newChunkToFirstChunkExponent));
+
             if (chunksInsade == null)
             {
                 chunksInsade = new Chunk[chunkInChunkSideNum, chunkInChunkSideNum];
             }
 
-            float newchunkSize = chunkSize / (float)chunkInChunkSideNum;
-            Vector2 newchunks2Dpositions = chunkPos - (chunkSize / 2) * Vector2.one + (newchunkSize / 2) * Vector2.one;
-
-            float newChunkToFirstChunkExponent = CalculateExponent(newchunkSize, chunkInChunkSideNum, planet.planetR * 2);
-
-            float ChunkSpawnDistance = DivideNTimesUsingLog(chunkGeneratingDistance, chunkGeneratingDistanceFallof, Mathf.RoundToInt( newChunkToFirstChunkExponent));
             if (ChunkSpawnDistance > Vector3.Distance(chunkWorldPos,player.transform.position))
             {
                 for (int x = 0; x < chunkInChunkSideNum; x++)
@@ -174,9 +186,7 @@ public class PlanetGenerator : MonoBehaviour
                          
                             chunksInsade[x, y] = newchunk;
 
-                            GameObject newcube = Instantiate(cube);
-                            newcube.transform.position = newchunk.chunkWorldPos;
-                            newcube.transform.parent = newchunk.chunk.transform;
+
 
                             newchunk.loadChunks(planet);
                         }
@@ -252,10 +262,6 @@ public class PlanetGenerator : MonoBehaviour
                 newchunk.chunkWorldPos = newChunkGameObject.GetComponent<MeshFilter>().mesh.vertices[(vertextSideCount * vertextSideCount) /2+ vertextSideCount/2];
                
                 newchunk.chunk = newChunkGameObject;
-
-                GameObject newcube = Instantiate(cube);
-                newcube.transform.position = newchunk.chunkWorldPos;
-                newcube.transform.parent = newchunk.chunk.transform;
 
                 this.chunks.Add(newchunk);
             }

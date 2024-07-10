@@ -149,7 +149,7 @@ void VertexGive(uint3 id : SV_DispatchThreadID) {
     switch (whatSide) {
         case 1:
             CubePosition = float3((id.x - gridSize / 2), 0, (id.y - gridSize / 2));
-            CubePosition = (CubePosition / gridSize) * planeLength + float3(posOnSphere.x , planetR, posOnSphere.y ) - float3(0,planeLength/gridSize,0);
+            CubePosition = (CubePosition / gridSize) * planeLength + float3(posOnSphere.x , planetR*0.965, posOnSphere.y ); //- float3(0,planeLength/gridSize,0);
             break;
 
         case 2:
@@ -159,22 +159,22 @@ void VertexGive(uint3 id : SV_DispatchThreadID) {
 
         case 3:
             CubePosition = float3((id.x - gridSize / 2), (id.y - gridSize / 2), 0);
-            CubePosition = (CubePosition / gridSize) * planeLength + float3(posOnSphere.x, posOnSphere.y , -planetR)+ float3(0,0,planeLength/gridSize/10);
+            CubePosition = (CubePosition / gridSize) * planeLength + float3(posOnSphere.x, posOnSphere.y , -planetR);//+ float3(0,0,planeLength/gridSize/10);
             break;
 
         case 4:
             CubePosition = float3((id.x - gridSize / 2), (id.y - gridSize / 2), 0);
-            CubePosition = (CubePosition / gridSize) * planeLength + float3(posOnSphere.x, posOnSphere.y , planetR)- float3(0,0,planeLength/gridSize);
+            CubePosition = (CubePosition / gridSize) * planeLength + float3(posOnSphere.x, posOnSphere.y , planetR*0.95);//- float3(0,0,planeLength/gridSize);
             break;
 
         case 5:
             CubePosition = float3(0, (id.x - gridSize / 2), (id.y - gridSize / 2));
-            CubePosition = (CubePosition / gridSize) * planeLength + float3(-planetR, posOnSphere.x, posOnSphere.y + 0.5f);
+            CubePosition = (CubePosition / gridSize) * planeLength + float3(-planetR, posOnSphere.x, posOnSphere.y );
             break;
 
         default:
             CubePosition = float3(0, (id.x - gridSize / 2), (id.y - gridSize / 2));
-            CubePosition = (CubePosition / gridSize) * planeLength + float3(planetR, posOnSphere.x , posOnSphere.y + 0.5f)- float3(planeLength/gridSize,0,0);
+            CubePosition = (CubePosition / gridSize) * planeLength + float3(planetR*0.95, posOnSphere.x , posOnSphere.y );//- float3(planeLength/gridSize,0,0);
             break;
     }
 
