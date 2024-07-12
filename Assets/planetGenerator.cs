@@ -62,7 +62,7 @@ public class PlanetGenerator : MonoBehaviour
         computeShader = computeShaderNostatic;
         planeMaterial = planeMaterialNostatic;
         vertextSideCount = vertextSideCountNostatic;
-        chunkGeneratingDistanceFallof = chunkGeneratingDistanceFallofNostatic;
+
         chunkGeneratingDistance = chunkGeneratingDistanceNostatic;
 
         chunkInChunkSideNum = chunkInChunkSideNostatic;
@@ -141,28 +141,46 @@ public class PlanetGenerator : MonoBehaviour
 
         public void loadChunks(PlanetData planet)
         {
-            
-            
-            float newchunkSize = chunkSize / (float)chunkInChunkSideNum;
+            float chunkPlayerDistance = Vector3.Distance(chunkWorldPos, player.transform.position);
 
-            if (newchunkSize < MinChunkSize)
+            float PlayerPlanetHight = Vector3.Distance(player.transform.position, planet.planetGameObject.transform.position);
+
+            if (CalculateDistance(planet.planetR, PlayerPlanetHight)*1.5f < chunkPlayerDistance)
             {
+                if (chunksInsade != null)
+                {
+                    for (int x = 0; x < chunkInChunkSideNum; x++)
+                    {
+                        for (int y = 0; y < chunkInChunkSideNum; y++)
+                        {
+                            if (chunksInsade[x, y] != null)
+                            {
+                                chunksInsade[x, y].chunk.SetActive(false);
+                            }
+                        }
+                    }
+                }              
+                chunk.SetActive(false);
                 return;
             }
-
+            float newchunkSize = chunkSize / (float)chunkInChunkSideNum;
+       
             Vector2 newchunks2Dpositions = chunkPos - (chunkSize / 2) * Vector2.one + (newchunkSize / 2) * Vector2.one;
+         
 
-           
-            float newChunkToFirstChunkExponent = CalculateExponent(newchunkSize, chunkInChunkSideNum, planet.planetR * 2);
-
-            float ChunkSpawnDistance = DivideNTimesUsingLog(chunkGeneratingDistance, chunkGeneratingDistanceFallof, Mathf.RoundToInt( newChunkToFirstChunkExponent));
+            float ChunkSpawnDistance = newchunkSize * chunkGeneratingDistance;
 
             if (chunksInsade == null)
             {
                 chunksInsade = new Chunk[chunkInChunkSideNum, chunkInChunkSideNum];
             }
 
-            if (ChunkSpawnDistance > Vector3.Distance(chunkWorldPos,player.transform.position))
+            if (newchunkSize < MinChunkSize)
+            {
+                return;
+            }
+
+            if (ChunkSpawnDistance > chunkPlayerDistance)
             {
                 for (int x = 0; x < chunkInChunkSideNum; x++)
                 {
@@ -180,13 +198,16 @@ public class PlanetGenerator : MonoBehaviour
                            
                             GameObject newChunkGameObject = GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, planet);
 
+                            if (newchunkSize / chunkInChunkSideNum < MinChunkSize)
+                            {
+                                newChunkGameObject.AddComponent<MeshCollider>();
+                            }
+
                             newchunk.chunk = newChunkGameObject;
                             newchunk.chunkWorldPos = newChunkGameObject.GetComponent<MeshFilter>().mesh.vertices[(vertextSideCount * vertextSideCount) / 2 + vertextSideCount / 2];
 
                          
                             chunksInsade[x, y] = newchunk;
-
-
 
                             newchunk.loadChunks(planet);
                         }
@@ -216,17 +237,26 @@ public class PlanetGenerator : MonoBehaviour
             
         }
     }
-    public static float chunkGeneratingDistanceFallof;
+    public static float CalculateDistance(float r, float h)
+    {
+        // Ensure the height is greater than the radius for the tangent to exist
+        if (h <= r)
+        {
+            throw new ArgumentException("Height must be greater than the radius for a tangent line to exist.");
+        }
+
+        // Calculate the distance using the Pythagorean theorem
+        float distance = (float)Math.Sqrt(h * h - r * r);
+        return distance;
+    }
+
     public static float chunkGeneratingDistance;
 
     public static int chunkInChunkSideNum;
 
-
-    [SerializeField] private float chunkGeneratingDistanceFallofNostatic;
     [SerializeField] private float chunkGeneratingDistanceNostatic;
 
     [SerializeField] private int chunkInChunkSideNostatic;
-
 
     [System.Serializable]
     public struct PlanetData{
@@ -235,17 +265,22 @@ public class PlanetGenerator : MonoBehaviour
         public int iterations;
         public float iterationSize;
         public float power;
-        public float Intensity;        
+        public float Intensity;
+        public GameObject planetGameObject;
+        public float OceanNoiseIntensity;
     }
 
     [System.Serializable]
     public class Planet
-    {
+    {     
         public PlanetData planetData;
         public List<Chunk> chunks;
         public Planet(PlanetData planetData)
         {
             this.planetData = planetData;
+
+            this.planetData.planetGameObject = new GameObject("planet");
+
             this.chunks = new List<Chunk>();
             for (int chunkSide = 1; chunkSide < 7; chunkSide++)
             {
@@ -256,8 +291,7 @@ public class PlanetGenerator : MonoBehaviour
                 newchunk.chunkSide = chunkSide;
                 newchunk.chunkSize = newchunkSize;
                 
-
-                GameObject newChunkGameObject = GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, planetData);
+                GameObject newChunkGameObject = GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, this.planetData);
 
                 newchunk.chunkWorldPos = newChunkGameObject.GetComponent<MeshFilter>().mesh.vertices[(vertextSideCount * vertextSideCount) /2+ vertextSideCount/2];
                
@@ -274,7 +308,7 @@ public class PlanetGenerator : MonoBehaviour
             {
                 foreach (Chunk chunk in chunks)
                 {
-                    chunk.loadChunks(planetData);
+                    chunk.loadChunks(this.planetData);
                 }
                 await Task.Delay(10);
             }
@@ -303,7 +337,8 @@ public class PlanetGenerator : MonoBehaviour
         computeShader.SetInt("iterations", planetdata.iterations);
         computeShader.SetFloat("iterationSize", planetdata.iterationSize);
         computeShader.SetFloat("power", planetdata.power);
-        computeShader.SetFloat("Intensity", planetdata.Intensity);
+        computeShader.SetFloat("Intensity", planetdata.Intensity); 
+        computeShader.SetFloat("OceanNoiseIntensity", planetdata.OceanNoiseIntensity);
 
         computeShader.SetBuffer(kernelHandle, "positions", posComputeBuffer);
         computeShader.SetBuffer(kernelHandle, "normals", norComputeBuffer);
@@ -349,7 +384,8 @@ public class PlanetGenerator : MonoBehaviour
 
         MeshFilter planeMeshFilter = plane.AddComponent<MeshFilter>();
         planeMeshFilter.mesh = planeMesh;
-        plane.AddComponent<MeshCollider>();
+
+        plane.transform.parent = planetdata.planetGameObject.transform;
 
         return plane;
     }

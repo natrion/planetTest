@@ -270,7 +270,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 3572
+  far clip plane: 1000000
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -405,7 +405,7 @@ Transform:
   m_GameObject: {fileID: 1052627999}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7.4949408, y: -13.864246, z: -3780}
+  m_LocalPosition: {x: 0, y: 0, z: -10000.2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -445,11 +445,13 @@ MonoBehaviour:
   cubeNonStat: {fileID: 0}
   onePlanetData:
     planetR: 1000
-    frequency: 0.001
-    iterations: 10
-    iterationSize: 1.5
+    frequency: 0.005
+    iterations: 20
+    iterationSize: 1.2
     power: 1
     Intensity: 150
+    planetGameObject: {fileID: 0}
+    OceanNoiseIntensity: 0.001
   planet:
     planetData:
       planetR: 0
@@ -458,13 +460,14 @@ MonoBehaviour:
       iterationSize: 0
       power: 0
       Intensity: 0
+      planetGameObject: {fileID: 0}
+      OceanNoiseIntensity: 0
     chunks: []
-  planeMaterialNostatic: {fileID: 10302, guid: 0000000000000000f000000000000000, type: 0}
+  planeMaterialNostatic: {fileID: 2100000, guid: 8b89e1596389cff41a2cdfb07f138cfa, type: 2}
   computeShaderNostatic: {fileID: 7200000, guid: 3f3ed6071a38298489602b712666723f, type: 3}
   playerNostatic: {fileID: 1052627999}
   vertextSideCountNostatic: 50
-  chunkGeneratingDistanceFallofNostatic: 4
-  chunkGeneratingDistanceNostatic: 10000
+  chunkGeneratingDistanceNostatic: 10
   chunkInChunkSideNostatic: 4
 --- !u!4 &1394525382
 Transform:

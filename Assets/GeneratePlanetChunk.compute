@@ -12,6 +12,7 @@ float iterationSize = 2.0f;
 float power = 2.0f;
 float Intensity = 2.0f;
 int whatSide = 1;
+float OceanNoiseIntensity;
 
 RWStructuredBuffer<float3> positions;
 RWStructuredBuffer<float3> normals;
@@ -80,7 +81,7 @@ float3x3 ComputePerpendicularVectors(float3 originalVector)
     return matrixSpace;
 }
 
-float generateComplexGradientNoise(float3 pos, float frequency, int iterations, float iterationSize, float power, float intensity) {
+float generateComplexGradientNoise(float3 pos, float frequency, int iterations, float iterationSize, float power, float intensity,float oceanNoiseIntensity) {
 
     float gradientNoiseValue = 0.0;
 
@@ -96,13 +97,13 @@ float generateComplexGradientNoise(float3 pos, float frequency, int iterations, 
         mountenrelativeDistortion *= iterationSize;
     }
     
-    return gradientNoiseValue * intensity;
+    return gradientNoiseValue * intensity *GenerateGradientNoise(pos*oceanNoiseIntensity);
 }
 
 float3 CalculatePosOnPlanet(float3 pos) {
     float3 SpherePosition = normalize(pos) * planetR;
 
-    float gradientNoise = generateComplexGradientNoise(SpherePosition, freqency, iterations, iterationSize, power,Intensity);
+    float gradientNoise = generateComplexGradientNoise(SpherePosition, freqency, iterations, iterationSize, power,Intensity,OceanNoiseIntensity);
     return SpherePosition * (1 + (gradientNoise / planetR));
 }
 
