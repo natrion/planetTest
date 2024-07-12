@@ -11,23 +11,71 @@ public class playerControler : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked; // Lock cursor to center of screen
         Cursor.visible = false; // Hide cursor
     }
+    public float planetRotationCangeDistance = 2;
+    float YRotation;
+    private PlanetGenerator.Planet curentPlanet;
     void Update()
     {
-        float mouseX = Input.GetAxis("Mouse X") * sensitivity;
-        float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
+        bool isonPlanet = false;
+        
 
-        // Rotate the object locally based on mouse movements
-        transform.Rotate(Vector3.up, mouseX, Space.Self); // Rotate around the object's Y-axis
-        transform.Rotate(Vector3.left, mouseY, Space.Self); // Rotate around the object's X-axis
-
-        if (Input.GetKey(KeyCode.Space))
+        foreach (PlanetGenerator.Planet planet in PlanetGenerator.planets)
         {
-            // Calculate the direction to move based on the object's forward vector
-            Vector3 moveDirection = transform.forward;
-
-            // Apply force in the direction the object is facing
-            gameObject.GetComponent<Rigidbody>().AddForce(moveDirection * moveForce, ForceMode.Force);
+            if (Vector3.Distance( transform.position ,planet.planetData.planetGameObject.transform.position)< planet.planetData.planetR* planetRotationCangeDistance)
+            {
+                isonPlanet = true;
+                curentPlanet = planet;
+            }
         }
+
+        if (isonPlanet == false)
+        {
+            float mouseX = Input.GetAxis("Mouse X") * sensitivity;
+            float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
+
+            // Rotate the object locally based on mouse movements
+            transform.Rotate(Vector3.up, mouseX, Space.Self); // Rotate around the object's Y-axis
+            transform.Rotate(Vector3.left, mouseY, Space.Self); // Rotate around the object's X-axis
+
+            if (Input.GetKey(KeyCode.Space))
+            {
+                // Calculate the direction to move based on the object's forward vector
+                Vector3 moveDirection = transform.forward;
+
+                // Apply force in the direction the object is facing
+                gameObject.GetComponent<Rigidbody>().AddForce(moveDirection * moveForce, ForceMode.Force);
+            }
+        }
+        else
+        {
+            Vector3 planetPos = curentPlanet.planetData.planetGameObject.transform.position;
+
+            Vector3 direction = (planetPos - transform.position).normalized;
+
+            transform.rotation = Quaternion.FromToRotation(-transform.up, direction) * transform.rotation;
+
+            float mY = Input.GetAxis("Mouse Y");
+            float mX = Input.GetAxis("Mouse X");
+
+
+            //transform.LookAt(curentPlanet.planetData.planetGameObject.transform);
+
+            transform.Rotate((Vector3.up * mX) * sensitivity );
+
+            YRotation += mY * sensitivity ;
+            YRotation = Mathf.Clamp(YRotation, -80, 80);
+            transform.GetChild(0).localEulerAngles = Vector3.left * YRotation;
+
+            if (Input.GetKey(KeyCode.Space))
+            {
+                // Calculate the direction to move based on the object's forward vector
+                Vector3 moveDirection = transform.forward;
+
+                // Apply force in the direction the object is facing
+                gameObject.GetComponent<Rigidbody>().AddForce(moveDirection * moveForce, ForceMode.Force);
+            }
+        }
+       
     }
     private void FixedUpdate()
     {
