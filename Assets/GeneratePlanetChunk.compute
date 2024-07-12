@@ -106,40 +106,43 @@ float3 CalculatePosOnPlanet(float3 pos) {
     float gradientNoise = generateComplexGradientNoise(SpherePosition, freqency, iterations, iterationSize, power,Intensity,OceanNoiseIntensity);
     return SpherePosition * (1 + (gradientNoise / planetR));
 }
-
+float3x3 GeneratePerpendicularDirections(float3 inputDir)
+{
+    inputDir = normalize(inputDir);
+            
+    // Generate the first perpendicular direction
+    float3 up = abs(inputDir.y) < 0.999 ? float3(0, 1, 0) : float3(1, 0, 0);
+    float3 perpendicular1 = normalize(cross(inputDir, up));
+            
+    // Generate the second perpendicular direction
+    float3 perpendicular2 = cross(inputDir, perpendicular1);
+            
+    // Construct the float3x3 matrix
+    return float3x3(perpendicular1, perpendicular2, inputDir);
+}
 float3 CalculateNormalDir(float3 finalPos)
 {
-    if(finalPos.y >-1*planeLength/gridSize &   finalPos.y <planeLength/gridSize )
-    {
-        return normalize(finalPos);
-    }
+    float3 normalizeDfinalPos = normalize(finalPos);
+
     float delta = 0.001f; // Small delta for finite differences
 
-    // Step 1: Normalize finalPos
-    float3 normalizedFinalPos = normalize( finalPos);
+    float3x3 NormalPos = GeneratePerpendicularDirections(normalizeDfinalPos);
 
-    // Step 2: Calculate two perpendicular directions
-    float3 dir1 = float3(1.0f, 0.0f, 0.0f); // Choose an arbitrary perpendicular direction
-    float3 dir2 = cross(normalizedFinalPos, dir1);
-    dir2 = normalize(dir2); // Ensure dir2 is normalized
+    // Scale the perpendicular directions by delta
+    NormalPos = NormalPos * delta;
 
-    // Step 3: Convert local space positions to world space
-    float3 worldPos1 = finalPos + float3(0.0f, 0.0f, delta);
-    float3 worldPos2 = finalPos + float3(delta, 0.0f, 0.0f);
+    // Calculate positions on the planet
+    float3 worldPos1 = CalculatePosOnPlanet(NormalPos[0] + finalPos);
+    float3 worldPos2 = CalculatePosOnPlanet(NormalPos[1] + finalPos);
 
-    // Step 4: Calculate positions on the planet (Assuming CalculatePosOnPlanet is defined elsewhere)
-    float3 planetPos1 = CalculatePosOnPlanet(worldPos1);
-    float3 planetPos2 = CalculatePosOnPlanet(worldPos2);
+    float3 direction1 = worldPos1 - finalPos;
+    float3 direction2 = worldPos2 - finalPos;
 
-    // Step 5: Calculate vectors from finalPos to the positions on the planet
-    float3 vec1 = planetPos1 - finalPos;
-    float3 vec2 = planetPos2 - finalPos;
+    // Calculate the cross product of worldPos1 and worldPos2
+    float3 normal = cross(normalize(direction1),normalize( direction2));
 
-    // Step 6: Calculate a vector perpendicular to vec1 and vec2
-    float3 normal = cross(vec1, vec2);
-    normal = normalize(normal); // Normalize the resulting normal vector
-    
-    return normalize( normal * (finalPos.y/ abs( finalPos.y)));
+    // Return the normalized normal vector
+    return normal;
 }
 
 [numthreads(16, 16, 1)]
@@ -180,6 +183,6 @@ void VertexGive(uint3 id : SV_DispatchThreadID) {
     }
 
     positions[index] = CalculatePosOnPlanet(CubePosition);
-    normals[index] = lerp( CalculateNormalDir(positions[index]) ,normalize(positions[index]), 0.5f);
+    normals[index] = CalculateNormalDir(positions[index]);
     UVs[index] = float2(id.x, id.y);
 }

@@ -129,7 +129,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _BiomNoiseFrequency: 0.01
+    - _BiomNoiseFrequency: 0.001
     - _BiomNoiseIntensity: 6.47
     - _BiomNoiseIterationSize: 1.2
     - _BiomNoiseIterations: 18.41

@@ -12,9 +12,8 @@ public class PlanetGenerator : MonoBehaviour
 {
     [SerializeField] private float MinChunkSizeNonStatic;
     private static float MinChunkSize;
-    [SerializeField] private  GameObject cubeNonStat;
     [SerializeField] private PlanetData onePlanetData;
-    [SerializeField] private Planet planet;
+    public static List<Planet> planets = new List<Planet>();
     public static Material planeMaterial;
     public static ComputeShader computeShader;
     public static GameObject player;
@@ -31,30 +30,12 @@ public class PlanetGenerator : MonoBehaviour
  
 
     void Start()
-    {
-        
+    {      
         StartImporantvariables();
 
-        planet = new Planet(onePlanetData);
-        //StartCoroutine(repeat());
+        new Planet(onePlanetData);
     }
-    private IEnumerator repeat()
-    {
-        bool Do = true;
-        while (Do == true)
-        {
-            if (indicesFront != null)
-            {
-                foreach (Chunk item in planet.chunks)
-                {
-                    Destroy(item.chunk);
-                }
-                planet = new Planet(onePlanetData);
-            }
-            yield return new WaitForSecondsRealtime(0.5f);
-        }
-        
-    }
+    
     public void StartImporantvariables()
     {
         MinChunkSize = MinChunkSizeNonStatic;
@@ -145,7 +126,7 @@ public class PlanetGenerator : MonoBehaviour
 
             float PlayerPlanetHight = Vector3.Distance(player.transform.position, planet.planetGameObject.transform.position);
 
-            if (CalculateDistance(planet.planetR, PlayerPlanetHight)*1.5f < chunkPlayerDistance)
+            if (CalculateDistance(planet.planetR, PlayerPlanetHight, planet.planetGameObject) *1.5f < chunkPlayerDistance)
             {
                 if (chunksInsade != null)
                 {
@@ -237,17 +218,29 @@ public class PlanetGenerator : MonoBehaviour
             
         }
     }
-    public static float CalculateDistance(float r, float h)
+    public static float CalculateDistance(float r, float h , GameObject Planet)
     {
+        float totalVelocity = player.GetComponent<Rigidbody>().velocity.magnitude + player.GetComponent<Rigidbody>().angularVelocity.magnitude;
+
+        if (h <= r*2 & totalVelocity > 1000)
+        {
+            player.transform.position = (player.transform.position - Planet.transform.position).normalized * r * 1.5f;
+
+            player.GetComponent<Rigidbody>().velocity = Vector3.zero;
+            player.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+        }
         // Ensure the height is greater than the radius for the tangent to exist
         if (h <= r)
         {
-            throw new ArgumentException("Height must be greater than the radius for a tangent line to exist.");
+            Debug.LogError("Height must be greater than the radius for a tangent line to exist.");           
+            return 0;
         }
-
-        // Calculate the distance using the Pythagorean theorem
-        float distance = (float)Math.Sqrt(h * h - r * r);
-        return distance;
+        else
+        {
+            // Calculate the distance using the Pythagorean theorem
+            float distance = (float)Math.Sqrt(h * h - r * r);
+            return distance;
+        }           
     }
 
     public static float chunkGeneratingDistance;
@@ -277,6 +270,7 @@ public class PlanetGenerator : MonoBehaviour
         public List<Chunk> chunks;
         public Planet(PlanetData planetData)
         {
+            
             this.planetData = planetData;
 
             this.planetData.planetGameObject = new GameObject("planet");
@@ -299,6 +293,7 @@ public class PlanetGenerator : MonoBehaviour
 
                 this.chunks.Add(newchunk);
             }
+            planets.Add(this);
             LoadChunks();
         }
         public async void LoadChunks()
@@ -310,7 +305,7 @@ public class PlanetGenerator : MonoBehaviour
                 {
                     chunk.loadChunks(this.planetData);
                 }
-                await Task.Delay(10);
+                await Task.Delay(1);
             }
         }
     }
