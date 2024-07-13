@@ -16,6 +16,15 @@ public class PlanetGenerator : MonoBehaviour
     public static List<Planet> planets = new List<Planet>();
     public static Material planeMaterial;
     public static ComputeShader computeShader;
+
+    public static ComputeShader grassComputeShader;
+    public static Material grassMaterial;
+    public static Mesh grassMesh;
+
+    [SerializeField]private  ComputeShader grassComputeShaderNonStatic;
+    [SerializeField] private  Material grassMaterialNonStatic;
+    [SerializeField] private  Mesh grassMeshNonStatic;
+
     public static GameObject player;
 
     [SerializeField] private Material planeMaterialNostatic;
@@ -27,10 +36,8 @@ public class PlanetGenerator : MonoBehaviour
     [SerializeField] private int vertextSideCountNostatic;
     public static int vertextSideCount;
 
- 
-
     void Start()
-    {      
+    {     
         StartImporantvariables();
 
         new Planet(onePlanetData);
@@ -38,6 +45,13 @@ public class PlanetGenerator : MonoBehaviour
     
     public void StartImporantvariables()
     {
+        grassIterations = grassIterationsNonStatic;
+        teststatic = test;
+        GrassDis = GrassDisNonStatic;
+        grassComputeShader = grassComputeShaderNonStatic;
+        grassMaterial = grassMaterialNonStatic;
+        grassMesh = grassMeshNonStatic;
+
         MinChunkSize = MinChunkSizeNonStatic;
         player = playerNostatic;
         computeShader = computeShaderNostatic;
@@ -111,8 +125,31 @@ public class PlanetGenerator : MonoBehaviour
         // Return the logarithm result
         return logBase;        
     }
+
+    public struct GPUinstanceData
+    {
+        public Matrix4x4[] matrixes;
+        public Mesh mesh;
+        public Material material;
+    }
+    //private static List<Chunk> chunksWithGPUinstancedata = new List<Chunk>();
+
+    private static List<GPUinstanceData> grasstoDraw = new List<GPUinstanceData>();
+
+    [SerializeField] GameObject test;
+    public static GameObject teststatic;
+
+    public static int grassIterations = 4;
+
+    [SerializeField]public int grassIterationsNonStatic = 4;
+
     [System.Serializable]
     public class Chunk {
+
+        //public List<GPUinstanceData> chunkGPUinstanceData = new List<GPUinstanceData>();
+
+        public GPUinstanceData[,] GrassGPUinstanceData;
+
         public GameObject chunk;
         public Vector2 chunkPos;
         public float chunkSize;
@@ -120,6 +157,43 @@ public class PlanetGenerator : MonoBehaviour
         public Vector3 chunkWorldPos;
         public Chunk[,] chunksInsade;
 
+        public void activateChunk()
+        {
+            chunk.SetActive(true);
+
+           // if (chunkGPUinstanceData.Count != 0)
+           // {
+           //     chunksWithGPUinstancedata.Add(this);
+
+           // }
+            //drawData();
+        }
+
+        public void DeactivateChunk()
+        {
+            chunk.SetActive(false);
+
+           // if (chunkGPUinstanceData.Count != 0)
+          //  {
+           //     chunksWithGPUinstancedata.Remove(this);
+           // }
+        }
+
+        /*
+        public async void drawData()
+        {
+            doDrawData = true;
+            while (doDrawData == true)
+            {
+                for (int i = 0; i < chunkGPUinstanceData.Count ; i++)
+                {
+                    Graphics.DrawMeshInstanced(chunkGPUinstanceData[i].mesh, 0, chunkGPUinstanceData[i].material, chunkGPUinstanceData[i].matrixes);
+                }
+                await Task.Delay(4);
+            }
+        }
+        */
+        
         public void loadChunks(PlanetData planet)
         {
             float chunkPlayerDistance = Vector3.Distance(chunkWorldPos, player.transform.position);
@@ -136,12 +210,12 @@ public class PlanetGenerator : MonoBehaviour
                         {
                             if (chunksInsade[x, y] != null)
                             {
-                                chunksInsade[x, y].chunk.SetActive(false);
+                                chunksInsade[x, y].DeactivateChunk();
                             }
                         }
                     }
-                }              
-                chunk.SetActive(false);
+                }
+                DeactivateChunk();
                 return;
             }
             float newchunkSize = chunkSize / (float)chunkInChunkSideNum;
@@ -151,15 +225,39 @@ public class PlanetGenerator : MonoBehaviour
 
             float ChunkSpawnDistance = newchunkSize * chunkGeneratingDistance;
 
+            if (newchunkSize < MinChunkSize )
+            {
+
+                if (chunkPlayerDistance < MinChunkSize * 2)
+                {
+                    int grassIterations = 4;
+
+                    this.GrassGPUinstanceData = new GPUinstanceData[grassIterations, grassIterations];
+
+                    for (int x = 0; x < grassIterations; x++)
+                    {
+                        for (int y = 0; y < grassIterations; y++)
+                        {
+                            int mul = vertextSideCount / grassIterations;
+                            Vector3[] vertices = this.chunk.GetComponent<MeshFilter>().mesh.vertices;
+
+                            Vector3 pos = vertices[x * mul * vertextSideCount + y * mul];
+
+                            GameObject newGrass = Instantiate(teststatic);
+                            newGrass.transform.position = pos;
+                        }
+                    }
+                }
+                return;
+
+            }
+
             if (chunksInsade == null)
             {
                 chunksInsade = new Chunk[chunkInChunkSideNum, chunkInChunkSideNum];
             }
 
-            if (newchunkSize < MinChunkSize)
-            {
-                return;
-            }
+           
 
             if (ChunkSpawnDistance > chunkPlayerDistance)
             {
@@ -181,7 +279,7 @@ public class PlanetGenerator : MonoBehaviour
 
                             if (newchunkSize / chunkInChunkSideNum < MinChunkSize)
                             {
-                                newChunkGameObject.AddComponent<MeshCollider>();
+                                newChunkGameObject.AddComponent<MeshCollider>();                              
                             }
 
                             newchunk.chunk = newChunkGameObject;
@@ -191,15 +289,16 @@ public class PlanetGenerator : MonoBehaviour
                             chunksInsade[x, y] = newchunk;
 
                             newchunk.loadChunks(planet);
+                            newchunk.activateChunk();
                         }
                         else
                         {
-                            chunksInsade[x, y].chunk.SetActive(true);
+                            chunksInsade[x, y].activateChunk();
                             chunksInsade[x, y].loadChunks(planet);
                         }                    
                     }
                 }
-                chunk.SetActive(false);
+                DeactivateChunk();
             }
             else
             {
@@ -209,15 +308,36 @@ public class PlanetGenerator : MonoBehaviour
                     {
                         if (chunksInsade[x, y] != null)
                         {
-                            chunksInsade[x, y].chunk.SetActive(false);
+                            chunksInsade[x, y].DeactivateChunk();
                         }
                     }
                 }
-                chunk.SetActive(true);
+                activateChunk();
             }
             
         }
     }
+
+    private void Update()
+    {
+        drawAllThings();
+    }
+    void drawAllThings()
+    {
+        // foreach (Chunk chunk in chunksWithGPUinstancedata)
+        //  {
+        //     for (int i = 0; i < chunk.chunkGPUinstanceData.Count; i++)
+        //     {
+        //         Graphics.DrawMeshInstanced(chunk.chunkGPUinstanceData[i].mesh, 0, chunk.chunkGPUinstanceData[i].material, chunk.chunkGPUinstanceData[i].matrixes);
+        //     }
+        // }
+        foreach (GPUinstanceData grass in grasstoDraw)
+        {
+            Graphics.DrawMeshInstanced(grass.mesh, 0, grass.material, grass.matrixes);
+        }
+    }
+    public static float GrassDis;
+    [SerializeField]private float GrassDisNonStatic;
     public static float CalculateDistance(float r, float h , GameObject Planet)
     {
         float totalVelocity = player.GetComponent<Rigidbody>().velocity.magnitude + player.GetComponent<Rigidbody>().angularVelocity.magnitude;
@@ -384,4 +504,51 @@ public class PlanetGenerator : MonoBehaviour
 
         return plane;
     }
+
+    static GPUinstanceData generateGrassGPUinstanceData(Vector2 posOnSphere, float planeLength, int whatSide, PlanetData planetdata)
+    {
+        int vertextTotalCount = vertextSideCount * vertextSideCount;
+
+        int kernelHandle = computeShader.FindKernel("VertexGive");
+
+        // Create compute buffers
+        ComputeBuffer matrixesComputeBuffer = new ComputeBuffer(vertextTotalCount, sizeof(float) *16);
+
+
+        // Set new plane parameters
+        grassComputeShader.SetFloat("gridSize", vertextSideCount);
+        grassComputeShader.SetFloat("whatSide", whatSide);
+        grassComputeShader.SetFloat("planeLength", planeLength);
+        grassComputeShader.SetVector("posOnSphere", new Vector4(posOnSphere.x, posOnSphere.y, 0, 0));
+
+        // Set new planet parameters
+        grassComputeShader.SetFloat("planetR", planetdata.planetR);
+        grassComputeShader.SetFloat("freqency", planetdata.frequency);
+        grassComputeShader.SetInt("iterations", planetdata.iterations);
+        grassComputeShader.SetFloat("iterationSize", planetdata.iterationSize);
+        grassComputeShader.SetFloat("power", planetdata.power);
+        grassComputeShader.SetFloat("Intensity", planetdata.Intensity);
+        grassComputeShader.SetFloat("OceanNoiseIntensity", planetdata.OceanNoiseIntensity);
+
+        grassComputeShader.SetBuffer(kernelHandle, "matrixData", matrixesComputeBuffer);
+
+
+        // Dispatch compute shader
+        grassComputeShader.Dispatch(kernelHandle, vertextSideCount / 16, vertextSideCount / 16, 1);
+
+        // Retrieve data from compute buffers
+         Matrix4x4[] matrixes = new Matrix4x4[vertextTotalCount];
+
+        matrixesComputeBuffer.GetData(matrixes);
+
+        // Release compute buffers
+        matrixesComputeBuffer.Release();
+
+        GPUinstanceData data = new GPUinstanceData();
+        data.matrixes = matrixes;
+        data.mesh = grassMesh;
+        data.material = grassMaterial;
+
+        return data;
+    }   
 }

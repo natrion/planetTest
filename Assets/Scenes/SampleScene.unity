@@ -523,7 +523,7 @@ MonoBehaviour:
   moveForce: 1000
   sensitivity: 2.5
   planetRotationCangeDistance: 2
-  gravityIntensity: 0.1
+  gravityIntensity: 0
 --- !u!54 &1052628005
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -562,7 +562,7 @@ GameObject:
   - component: {fileID: 1394525382}
   - component: {fileID: 1394525381}
   m_Layer: 0
-  m_Name: test
+  m_Name: planetGenerator
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -590,10 +590,16 @@ MonoBehaviour:
     Intensity: 150
     planetGameObject: {fileID: 0}
     OceanNoiseIntensity: 0.001
+  grassComputeShaderNonStatic: {fileID: 7200000, guid: db9f3078daf124f49a55f5f815e290e4, type: 3}
+  grassMaterialNonStatic: {fileID: 2100000, guid: f9a94780aa94b7c4985400ab0bedcdbb, type: 2}
+  grassMeshNonStatic: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   planeMaterialNostatic: {fileID: 2100000, guid: 8b89e1596389cff41a2cdfb07f138cfa, type: 2}
   computeShaderNostatic: {fileID: 7200000, guid: 3f3ed6071a38298489602b712666723f, type: 3}
   playerNostatic: {fileID: 1052627999}
   vertextSideCountNostatic: 50
+  test: {fileID: 1916873482}
+  grassIterationsNonStatic: 4
+  GrassDisNonStatic: 100
   chunkGeneratingDistanceNostatic: 10
   chunkInChunkSideNostatic: 4
 --- !u!4 &1394525382

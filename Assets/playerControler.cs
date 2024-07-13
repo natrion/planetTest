@@ -16,12 +16,17 @@ public class playerControler : MonoBehaviour
     private PlanetGenerator.Planet curentPlanet;
     void Update()
     {
+        controlPlayer();
+    }
+
+    void controlPlayer()
+    {
         bool isonPlanet = false;
-        
+
 
         foreach (PlanetGenerator.Planet planet in PlanetGenerator.planets)
         {
-            if (Vector3.Distance( transform.position ,planet.planetData.planetGameObject.transform.position)< planet.planetData.planetR* planetRotationCangeDistance)
+            if (Vector3.Distance(transform.position, planet.planetData.planetGameObject.transform.position) < planet.planetData.planetR * planetRotationCangeDistance)
             {
                 isonPlanet = true;
                 curentPlanet = planet;
@@ -60,9 +65,9 @@ public class playerControler : MonoBehaviour
 
             //transform.LookAt(curentPlanet.planetData.planetGameObject.transform);
 
-            transform.Rotate((Vector3.up * mX) * sensitivity );
+            transform.Rotate((Vector3.up * mX) * sensitivity);
 
-            YRotation += mY * sensitivity ;
+            YRotation += mY * sensitivity;
             YRotation = Mathf.Clamp(YRotation, -80, 80);
             transform.GetChild(0).localEulerAngles = Vector3.left * YRotation;
 
@@ -74,9 +79,12 @@ public class playerControler : MonoBehaviour
                 // Apply force in the direction the object is facing
                 gameObject.GetComponent<Rigidbody>().AddForce(moveDirection * moveForce, ForceMode.Force);
             }
+
+
+
         }
-       
     }
+
     private void FixedUpdate()
     {
         if (PlanetGenerator.planets.Count != 0)
