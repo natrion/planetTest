@@ -16,30 +16,78 @@ float OceanNoiseIntensity;
 
 RWStructuredBuffer<float4x4> matrixData;
 
-float4x4 CreateTransformationMatrix(float3 position, float3 rotation, float3 scale)
-{
-    // Convert Euler angles to rotation matrix
-    float3x3 rotationMatrix = float3x3(
-        cos(rotation.y) * cos(rotation.z), cos(rotation.y) * sin(rotation.z), -sin(rotation.y),
-        sin(rotation.x) * sin(rotation.y) * cos(rotation.z) - cos(rotation.x) * sin(rotation.z), sin(rotation.x) * sin(rotation.y) * sin(rotation.z) + cos(rotation.x) * cos(rotation.z), sin(rotation.x) * cos(rotation.y),
-        cos(rotation.x) * sin(rotation.y) * cos(rotation.z) + sin(rotation.x) * sin(rotation.z), cos(rotation.x) * sin(rotation.y) * sin(rotation.z) - sin(rotation.x) * cos(rotation.z), cos(rotation.x) * cos(rotation.y)
-    );
+ 
+float4x4 Rotate(float4 q) {
+    // Precalculate coordinate products
+    float x = q.x * 2.0f;
+    float y = q.y * 2.0f;
+    float z = q.z * 2.0f;
+    float xx = q.x * x;
+    float yy = q.y * y;
+    float zz = q.z * z;
+    float xy = q.x * y;
+    float xz = q.x * z;
+    float yz = q.y * z;
+    float wx = q.w * x;
+    float wy = q.w * y;
+    float wz = q.w * z;
 
-    // Apply scale to rotation matrix
-    rotationMatrix[0] *= scale.x;
-    rotationMatrix[1] *= scale.y;
-    rotationMatrix[2] *= scale.z;
-
-    // Create 4x4 transformation matrix
-    float4x4 transformationMatrix = float4x4(
-        float4(rotationMatrix[0], 0.0),
-        float4(rotationMatrix[1], 0.0),
-        float4(rotationMatrix[2], 0.0),
-        float4(position, 1.0)
-    );
-
-    return transformationMatrix;
+    // Calculate 3x3 matrix from orthonormal basis
+    float4x4 m;
+    m[0] = float4(1.0f - (yy + zz), xy + wz, xz - wy, 0.0f);
+    m[1] = float4(xy - wz, 1.0f - (xx + zz), yz + wx, 0.0f);
+    m[2] = float4(xz + wy, yz - wx, 1.0f - (xx + yy), 0.0f);
+    m[3] = float4(0.0f, 0.0f, 0.0f, 1.0f);
+    return m;
 }
+float4x4 Translate(float3 inputvector) {
+    float4x4 m;
+    m[0] = float4(1.0f, 0.0f, 0.0f, inputvector.x);
+    m[1] = float4(0.0f, 1.0f, 0.0f, inputvector.y);
+    m[2] = float4(0.0f, 0.0f, 1.0f, inputvector.z);
+    m[3] = float4(0.0f, 0.0f, 0.0f, 1.0f);
+    return m;
+}
+float4x4 Scale(float3 inputvector) {
+    float4x4 m;
+    m[0] = float4(inputvector.x, 0.0f, 0.0f, 0.0f);
+    m[1] = float4(0.0f, inputvector.y, 0.0f, 0.0f);
+    m[2] = float4(0.0f, 0.0f, inputvector.z, 0.0f);
+    m[3] = float4(0.0f, 0.0f, 0.0f, 1.0f);
+    return m;
+}
+
+float4x4 CombineTransforms(float3 scale, float3 translate, float4 quaternion) {
+    float4x4 scaleMatrix = Scale(scale);
+    float4x4 translateMatrix = Translate(translate);
+    float4x4 rotateMatrix = Rotate(quaternion);
+
+    // Combine the transformations: T * R * S
+    float4x4 transformMatrix = mul(translateMatrix, mul(rotateMatrix, scaleMatrix));
+
+    return transformMatrix;
+}
+
+// Function to convert a normal direction into a float4 quaternion
+float4 NormalToQuaternion(float3 normal)
+{
+    // Normalize the input normal vector
+    normal = normalize(normal);
+    
+    // Define the forward direction in Unity's coordinate system (float3(0, 0, 1))
+    float3 forward = float3(0, 0, 1);
+    
+    // Calculate the quaternion that rotates the forward vector to match the normal
+    float4 quat;
+    quat.xyz = cross(forward, normal);  // Get the axis of rotation
+    quat.w = sqrt(dot(forward, forward) * dot(normal, normal)) + dot(forward, normal); // Calculate the real part
+
+    // Normalize the quaternion to ensure it represents a valid rotation
+    quat = normalize(quat);
+
+    return quat;
+}
+
 
 float hash(float3 p) {
     p = float3(dot(p, float3(127.1, 311.7, 74.7)),
@@ -169,6 +217,10 @@ void VertexGive(uint3 id : SV_DispatchThreadID) {
     }
 
     float3 position = CalculatePosOnPlanet(CubePosition);
-
-    matrixData[index] =  CreateTransformationMatrix(position,normalize(position),float3(1,1,1) );
+    float4 rotation = NormalToQuaternion( position);
+    float3 scale = float3(1,1,1);
+                  
+    matrixData[index] = CombineTransforms(scale, position, rotation);
 }
+
+

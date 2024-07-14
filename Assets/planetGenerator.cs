@@ -126,7 +126,7 @@ public class PlanetGenerator : MonoBehaviour
         return logBase;        
     }
 
-    public struct GPUinstanceData
+    public class GPUinstanceData
     {
         public Matrix4x4[] matrixes;
         public Mesh mesh;
@@ -230,21 +230,44 @@ public class PlanetGenerator : MonoBehaviour
 
                 if (chunkPlayerDistance < MinChunkSize * 2)
                 {
-                    int grassIterations = 4;
-
-                    this.GrassGPUinstanceData = new GPUinstanceData[grassIterations, grassIterations];
+                    if (this.GrassGPUinstanceData == null)
+                    {
+                        this.GrassGPUinstanceData = new GPUinstanceData[grassIterations, grassIterations];
+                    }
+                    
 
                     for (int x = 0; x < grassIterations; x++)
                     {
                         for (int y = 0; y < grassIterations; y++)
                         {
+                            
                             int mul = vertextSideCount / grassIterations;
+                            Vector2Int indexPos = new Vector2Int(x * mul + mul / 2, y * mul+ mul / 2);
+
                             Vector3[] vertices = this.chunk.GetComponent<MeshFilter>().mesh.vertices;
 
-                            Vector3 pos = vertices[x * mul * vertextSideCount + y * mul];
+                            Vector3 pos = vertices[indexPos.x* vertextSideCount + indexPos.y];
 
-                            GameObject newGrass = Instantiate(teststatic);
-                            newGrass.transform.position = pos;
+                            if (Vector3.Distance(player.transform.position, pos) < GrassDis)
+                            {                                                            
+                                if (this.GrassGPUinstanceData[x, y] ==null)
+                                {
+                                    float grassSideChunkSize = (float)chunkSize / (float)grassIterations;
+                                    Vector2 grassChunkPos = chunkPos - ((Vector2.one * chunkSize) / 2) + ((Vector2)indexPos/(float)vertextSideCount) * chunkSize;
+                                    this.GrassGPUinstanceData[x, y] = generateGrassGPUinstanceData(grassChunkPos, grassSideChunkSize, chunkSide, planet);
+                                    grasstoDraw.Add(this.GrassGPUinstanceData[x, y]);
+                                }
+                                else if(grasstoDraw.Contains(this.GrassGPUinstanceData[x, y]) == false)
+                                {
+                                    grasstoDraw.Add(this.GrassGPUinstanceData[x, y]);
+                                }
+                                //Graphics.DrawMeshInstanced(data.mesh, 0 ,data.material, data.matrixes);
+                            }
+                            else if(grasstoDraw.Contains(this.GrassGPUinstanceData[x, y]) == true)
+                            {
+                                grasstoDraw.Remove(this.GrassGPUinstanceData[x, y]);
+                            }
+
                         }
                     }
                 }
@@ -322,7 +345,7 @@ public class PlanetGenerator : MonoBehaviour
     {
         drawAllThings();
     }
-    void drawAllThings()
+    private async Task drawAllThings()
     {
         // foreach (Chunk chunk in chunksWithGPUinstancedata)
         //  {
@@ -333,7 +356,7 @@ public class PlanetGenerator : MonoBehaviour
         // }
         foreach (GPUinstanceData grass in grasstoDraw)
         {
-            Graphics.DrawMeshInstanced(grass.mesh, 0, grass.material, grass.matrixes);
+            Graphics.DrawMeshInstanced(grass.mesh, 0, grass.material, grass.matrixes, grass.matrixes.Length);
         }
     }
     public static float GrassDis;
@@ -416,7 +439,7 @@ public class PlanetGenerator : MonoBehaviour
             planets.Add(this);
             LoadChunks();
         }
-        public async void LoadChunks()
+        public async Task LoadChunks()
         {
             bool docCode = true;
             while (docCode == true)
@@ -425,7 +448,7 @@ public class PlanetGenerator : MonoBehaviour
                 {
                     chunk.loadChunks(this.planetData);
                 }
-                await Task.Delay(1);
+                await Task.Delay(10);
             }
         }
     }

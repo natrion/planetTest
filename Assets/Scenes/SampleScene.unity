@@ -490,7 +490,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1052627999}
-  m_Mesh: {fileID: 10208, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!4 &1052628003
 Transform:
   m_ObjectHideFlags: 0
@@ -500,7 +500,7 @@ Transform:
   m_GameObject: {fileID: 1052627999}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10000}
+  m_LocalPosition: {x: 0, y: 0, z: -1092}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -591,15 +591,15 @@ MonoBehaviour:
     planetGameObject: {fileID: 0}
     OceanNoiseIntensity: 0.001
   grassComputeShaderNonStatic: {fileID: 7200000, guid: db9f3078daf124f49a55f5f815e290e4, type: 3}
-  grassMaterialNonStatic: {fileID: 2100000, guid: f9a94780aa94b7c4985400ab0bedcdbb, type: 2}
-  grassMeshNonStatic: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+  grassMaterialNonStatic: {fileID: 2100000, guid: 81dfc0cafa7ff5c4f93ca2950fb3a286, type: 2}
+  grassMeshNonStatic: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
   planeMaterialNostatic: {fileID: 2100000, guid: 8b89e1596389cff41a2cdfb07f138cfa, type: 2}
   computeShaderNostatic: {fileID: 7200000, guid: 3f3ed6071a38298489602b712666723f, type: 3}
   playerNostatic: {fileID: 1052627999}
   vertextSideCountNostatic: 50
   test: {fileID: 1916873482}
   grassIterationsNonStatic: 4
-  GrassDisNonStatic: 100
+  GrassDisNonStatic: 40
   chunkGeneratingDistanceNostatic: 10
   chunkInChunkSideNostatic: 4
 --- !u!4 &1394525382
@@ -718,7 +718,7 @@ Transform:
   m_GameObject: {fileID: 1916873482}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3033.9006, y: 187.11653, z: -869.08276}
+  m_LocalPosition: {x: 23.48, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
