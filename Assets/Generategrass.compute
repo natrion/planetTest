@@ -75,7 +75,7 @@ float4 NormalToQuaternion(float3 normal)
     normal = normalize(normal);
     
     // Define the forward direction in Unity's coordinate system (float3(0, 0, 1))
-    float3 forward = float3(0, 0, 1);
+    float3 forward = float3(1, 0, 0);
     
     // Calculate the quaternion that rotates the forward vector to match the normal
     float4 quat;
@@ -179,7 +179,7 @@ float3 CalculatePosOnPlanet(float3 pos) {
 }
 
 
-[numthreads(16, 16, 1)]
+[numthreads(4, 8, 1)]
 void VertexGive(uint3 id : SV_DispatchThreadID) {
     float index = id.x * gridSize + id.y;
     float3 CubePosition = float3(0, 0, 0); // Initialize CubePosition
@@ -220,7 +220,7 @@ void VertexGive(uint3 id : SV_DispatchThreadID) {
     float4 rotation = NormalToQuaternion( position);
     float3 scale = float3(1,1,1);
                   
-    matrixData[index] = CombineTransforms(scale, position, rotation);
+    matrixData[index] = CombineTransforms(scale, position,rotation );
 }
 
 

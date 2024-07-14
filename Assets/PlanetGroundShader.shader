@@ -32,7 +32,6 @@ Shader "Custom/PlanetGroundShader"
         _BiomTransotionNum ("Biom transition size", Float) = 1.0
 
         _PlanetPosition ("Planet Position", Vector) = (0,0,0)
-        _PlanetR ("Planet radius", Float) = 0
         _TileSize ("Tile Size", Float) = 1.0
         _transitionNum ("color number", Float) = 1.0
         _CliffSize ("_Cliff Size", Float) = 1.0
@@ -138,7 +137,6 @@ Shader "Custom/PlanetGroundShader"
         float3 _PlanetPosition;
         float _TileSize;
         float _transitionNum;
-        float _PlanetR;
         float _CliffSize;
 
         float _BiomTransotionNum;

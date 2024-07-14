@@ -36,6 +36,9 @@ public class PlanetGenerator : MonoBehaviour
     [SerializeField] private int vertextSideCountNostatic;
     public static int vertextSideCount;
 
+    [SerializeField] private int grassSideCountNonStatic;
+    public static int grassSideCount;
+
     void Start()
     {     
         StartImporantvariables();
@@ -57,12 +60,15 @@ public class PlanetGenerator : MonoBehaviour
         computeShader = computeShaderNostatic;
         planeMaterial = planeMaterialNostatic;
         vertextSideCount = vertextSideCountNostatic;
+        vertextSideCount = Mathf.CeilToInt((float)vertextSideCount / 16) * 16;
 
         chunkGeneratingDistance = chunkGeneratingDistanceNostatic;
 
         chunkInChunkSideNum = chunkInChunkSideNostatic;
 
-        vertextSideCount = Mathf.CeilToInt((float)vertextSideCount / 16) * 16;
+        grassSideCountNonStatic =  Mathf.CeilToInt((float)grassSideCountNonStatic / 4) * 4;
+        grassSideCount = grassSideCountNonStatic;
+
         GenerateIndices();
     }
     void GenerateIndices()
@@ -128,6 +134,7 @@ public class PlanetGenerator : MonoBehaviour
 
     public class GPUinstanceData
     {
+        public Vector4[] colors;
         public Matrix4x4[] matrixes;
         public Mesh mesh;
         public Material material;
@@ -263,10 +270,7 @@ public class PlanetGenerator : MonoBehaviour
                                 }
                                 //Graphics.DrawMeshInstanced(data.mesh, 0 ,data.material, data.matrixes);
                             }
-                            else if(grasstoDraw.Contains(this.GrassGPUinstanceData[x, y]) == true)
-                            {
-                                grasstoDraw.Remove(this.GrassGPUinstanceData[x, y]);
-                            }
+                            
 
                         }
                     }
@@ -345,6 +349,11 @@ public class PlanetGenerator : MonoBehaviour
     {
         drawAllThings();
     }
+    public Vector3 GetPosition(Matrix4x4 m)
+    {
+        return new Vector3(m[0, 3], m[1, 3], m[2, 3]);
+    }
+
     private async Task drawAllThings()
     {
         // foreach (Chunk chunk in chunksWithGPUinstancedata)
@@ -356,7 +365,15 @@ public class PlanetGenerator : MonoBehaviour
         // }
         foreach (GPUinstanceData grass in grasstoDraw)
         {
-            Graphics.DrawMeshInstanced(grass.mesh, 0, grass.material, grass.matrixes, grass.matrixes.Length);
+            if (Vector3.Distance( GetPosition(grass.matrixes[(grassIterations / 2) * grassIterations + grassIterations / 2]),player.transform.position )> GrassDis)
+            {
+                grasstoDraw.Remove(grass);
+            }
+            else
+            {
+                Graphics.DrawMeshInstanced(grass.mesh, 0, grass.material, grass.matrixes, grass.matrixes.Length, new MaterialPropertyBlock(), UnityEngine.Rendering.ShadowCastingMode.Off, false);
+                
+            }
         }
     }
     public static float GrassDis;
@@ -530,6 +547,7 @@ public class PlanetGenerator : MonoBehaviour
 
     static GPUinstanceData generateGrassGPUinstanceData(Vector2 posOnSphere, float planeLength, int whatSide, PlanetData planetdata)
     {
+        
         int vertextTotalCount = vertextSideCount * vertextSideCount;
 
         int kernelHandle = computeShader.FindKernel("VertexGive");
@@ -537,6 +555,7 @@ public class PlanetGenerator : MonoBehaviour
         // Create compute buffers
         ComputeBuffer matrixesComputeBuffer = new ComputeBuffer(vertextTotalCount, sizeof(float) *16);
 
+        ComputeBuffer colorsComputeBuffer = new ComputeBuffer(vertextTotalCount, sizeof(float) * 4);
 
         // Set new plane parameters
         grassComputeShader.SetFloat("gridSize", vertextSideCount);
@@ -554,24 +573,27 @@ public class PlanetGenerator : MonoBehaviour
         grassComputeShader.SetFloat("OceanNoiseIntensity", planetdata.OceanNoiseIntensity);
 
         grassComputeShader.SetBuffer(kernelHandle, "matrixData", matrixesComputeBuffer);
-
+        grassComputeShader.SetBuffer(kernelHandle, "ColorData", colorsComputeBuffer);
 
         // Dispatch compute shader
-        grassComputeShader.Dispatch(kernelHandle, vertextSideCount / 16, vertextSideCount / 16, 1);
+        grassComputeShader.Dispatch(kernelHandle, vertextSideCount / 4, vertextSideCount / 4, 1);
 
         // Retrieve data from compute buffers
-         Matrix4x4[] matrixes = new Matrix4x4[vertextTotalCount];
+        Matrix4x4[] matrixes = new Matrix4x4[vertextTotalCount];
+
+        Vector4[] colors = new Vector4[vertextTotalCount];
 
         matrixesComputeBuffer.GetData(matrixes);
-
+        colorsComputeBuffer.GetData(colors);
         // Release compute buffers
         matrixesComputeBuffer.Release();
+        colorsComputeBuffer.Release();
 
         GPUinstanceData data = new GPUinstanceData();
         data.matrixes = matrixes;
         data.mesh = grassMesh;
         data.material = grassMaterial;
-
+        data.colors = colors;
         return data;
     }   
 }
