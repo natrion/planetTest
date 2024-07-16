@@ -17,13 +17,13 @@ public class PlanetGenerator : MonoBehaviour
     public static Material planeMaterial;
     public static ComputeShader computeShader;
 
-    public static ComputeShader grassComputeShader;
-    public static Material grassMaterial;
-    public static Mesh grassMesh;
+   // public static ComputeShader grassComputeShader;
+   // public static Material grassMaterial;
+   // public static Mesh grassMesh;
 
-    [SerializeField]private  ComputeShader grassComputeShaderNonStatic;
-    [SerializeField] private  Material grassMaterialNonStatic;
-    [SerializeField] private  Mesh grassMeshNonStatic;
+   // [SerializeField]private  ComputeShader grassComputeShaderNonStatic;
+   // [SerializeField] private  Material grassMaterialNonStatic;
+   // [SerializeField] private  Mesh grassMeshNonStatic;
 
     public static GameObject player;
 
@@ -36,8 +36,8 @@ public class PlanetGenerator : MonoBehaviour
     [SerializeField] private int vertextSideCountNostatic;
     public static int vertextSideCount;
 
-    [SerializeField] private int grassSideCountNonStatic;
-    public static int grassSideCount;
+  //  [SerializeField] private int grassSideCountNonStatic;
+  //  public static int grassSideCount;
 
     void Start()
     {     
@@ -48,13 +48,15 @@ public class PlanetGenerator : MonoBehaviour
     
     public void StartImporantvariables()
     {
-        grassIterations = grassIterationsNonStatic;
+       // grassIterations = grassIterationsNonStatic;
         teststatic = test;
-        GrassDis = GrassDisNonStatic;
-        grassComputeShader = grassComputeShaderNonStatic;
-        grassMaterial = grassMaterialNonStatic;
-        grassMesh = grassMeshNonStatic;
+        // GrassDis = GrassDisNonStatic;
+        // grassComputeShader = grassComputeShaderNonStatic;
+        // grassMaterial = grassMaterialNonStatic;
+        //  grassMesh = grassMeshNonStatic;
 
+        grassMaterial = grassMaterialNonStatic;
+        
         MinChunkSize = MinChunkSizeNonStatic;
         player = playerNostatic;
         computeShader = computeShaderNostatic;
@@ -66,8 +68,8 @@ public class PlanetGenerator : MonoBehaviour
 
         chunkInChunkSideNum = chunkInChunkSideNostatic;
 
-        grassSideCountNonStatic =  Mathf.CeilToInt((float)grassSideCountNonStatic / 4) * 4;
-        grassSideCount = grassSideCountNonStatic;
+       // grassSideCountNonStatic =  Mathf.CeilToInt((float)grassSideCountNonStatic / 4) * 4;
+       // grassSideCount = grassSideCountNonStatic;
 
         GenerateIndices();
     }
@@ -141,14 +143,16 @@ public class PlanetGenerator : MonoBehaviour
     }
     //private static List<Chunk> chunksWithGPUinstancedata = new List<Chunk>();
 
-    private static List<GPUinstanceData> grasstoDraw = new List<GPUinstanceData>();
+    // private static List<GPUinstanceData> grasstoDraw = new List<GPUinstanceData>();
+    [SerializeField] private Material grassMaterialNonStatic;
+    public static Material grassMaterial;
 
     [SerializeField] GameObject test;
     public static GameObject teststatic;
 
-    public static int grassIterations = 4;
+   // public static int grassIterations = 4;
 
-    [SerializeField]public int grassIterationsNonStatic = 4;
+    //[SerializeField]public int grassIterationsNonStatic = 4;
 
     [System.Serializable]
     public class Chunk {
@@ -158,6 +162,8 @@ public class PlanetGenerator : MonoBehaviour
         public GPUinstanceData[,] GrassGPUinstanceData;
 
         public GameObject chunk;
+        public GameObject GrassChunk;
+
         public Vector2 chunkPos;
         public float chunkSize;
         public int chunkSide;
@@ -207,34 +213,18 @@ public class PlanetGenerator : MonoBehaviour
 
             float PlayerPlanetHight = Vector3.Distance(player.transform.position, planet.planetGameObject.transform.position);
 
-            if (CalculateDistance(planet.planetR, PlayerPlanetHight, planet.planetGameObject) *1.5f < chunkPlayerDistance)
-            {
-                if (chunksInsade != null)
-                {
-                    for (int x = 0; x < chunkInChunkSideNum; x++)
-                    {
-                        for (int y = 0; y < chunkInChunkSideNum; y++)
-                        {
-                            if (chunksInsade[x, y] != null)
-                            {
-                                chunksInsade[x, y].DeactivateChunk();
-                            }
-                        }
-                    }
-                }
-                DeactivateChunk();
-                return;
-            }
+           
             float newchunkSize = chunkSize / (float)chunkInChunkSideNum;
        
             Vector2 newchunks2Dpositions = chunkPos - (chunkSize / 2) * Vector2.one + (newchunkSize / 2) * Vector2.one;
-         
 
-            float ChunkSpawnDistance = newchunkSize * chunkGeneratingDistance;
+            float ChunkSpawnDistance = (planet.planetR*2 / Mathf.Pow(2, CalculateExponent(newchunkSize, (float)chunkInChunkSideNum*0.6f, planet.planetR * 2) )) * chunkGeneratingDistance;
+
+            //float ChunkSpawnDistance = newchunkSize * chunkGeneratingDistance * 2;
 
             if (newchunkSize < MinChunkSize )
             {
-
+                /*
                 if (chunkPlayerDistance < MinChunkSize * 2)
                 {
                     if (this.GrassGPUinstanceData == null)
@@ -274,7 +264,7 @@ public class PlanetGenerator : MonoBehaviour
 
                         }
                     }
-                }
+                }*/
                 return;
 
             }
@@ -302,11 +292,16 @@ public class PlanetGenerator : MonoBehaviour
                             newchunk.chunkSide = chunkSide;
                             newchunk.chunkSize = newchunkSize;
                            
-                            GameObject newChunkGameObject = GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, planet);
+                            GameObject newChunkGameObject;
 
                             if (newchunkSize / chunkInChunkSideNum < MinChunkSize)
                             {
-                                newChunkGameObject.AddComponent<MeshCollider>();                              
+                                newChunkGameObject = GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, planet, true);
+                                newChunkGameObject.AddComponent<MeshCollider>();
+                            }
+                            else
+                            {
+                                newChunkGameObject = GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, planet, false);
                             }
 
                             newchunk.chunk = newChunkGameObject;
@@ -341,10 +336,27 @@ public class PlanetGenerator : MonoBehaviour
                 }
                 activateChunk();
             }
-            
+
+            if (CalculateDistance(planet.planetR, PlayerPlanetHight, planet.planetGameObject) * 1.5f < chunkPlayerDistance)
+            {
+                if (chunksInsade != null)
+                {
+                    for (int x = 0; x < chunkInChunkSideNum; x++)
+                    {
+                        for (int y = 0; y < chunkInChunkSideNum; y++)
+                        {
+                            if (chunksInsade[x, y] != null)
+                            {
+                                chunksInsade[x, y].DeactivateChunk();
+                            }
+                        }
+                    }
+                }
+                DeactivateChunk();
+            }
         }
     }
-
+    /*
     private void Update()
     {
         drawAllThings();
@@ -375,26 +387,22 @@ public class PlanetGenerator : MonoBehaviour
                 
             }
         }
-    }
-    public static float GrassDis;
-    [SerializeField]private float GrassDisNonStatic;
+    }*/
+    //public static float GrassDis;
+    //[SerializeField]private float GrassDisNonStatic;
     public static float CalculateDistance(float r, float h , GameObject Planet)
     {
-        float totalVelocity = player.GetComponent<Rigidbody>().velocity.magnitude + player.GetComponent<Rigidbody>().angularVelocity.magnitude;
+       //float totalVelocity = player.GetComponent<Rigidbody>().velocity.magnitude + player.GetComponent<Rigidbody>().angularVelocity.magnitude;
 
-        if (h <= r*2 & totalVelocity > 1000)
+        if (h <= r *0.8f)
         {
-            player.transform.position = (player.transform.position - Planet.transform.position).normalized * r * 1.5f;
+            player.transform.position = (player.transform.position - Planet.transform.position).normalized * r * 3;
 
             player.GetComponent<Rigidbody>().velocity = Vector3.zero;
             player.GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+            return 0 ;
         }
-        // Ensure the height is greater than the radius for the tangent to exist
-        if (h <= r)
-        {
-            Debug.LogError("Height must be greater than the radius for a tangent line to exist.");           
-            return 0;
-        }
+        // Ensure the height is greater than the radius for the tangent to exist     
         else
         {
             // Calculate the distance using the Pythagorean theorem
@@ -411,8 +419,28 @@ public class PlanetGenerator : MonoBehaviour
 
     [SerializeField] private int chunkInChunkSideNostatic;
 
+    public struct objectInfo
+    {
+        public Vector3 pos;
+        public Vector4 rot;
+        public int type;
+    };
+    [System.Serializable]
+    public struct TypeInfo
+    {
+        public int type;
+        public int whatBiome;
+        public float rarity;
+        public int OnSide1JustUp0;
+        public float plusYpos;
+    };
+
     [System.Serializable]
     public struct PlanetData{
+
+        public TypeInfo[] PlanetTypeInfo;
+        public GameObject[] PlanetTypeInfoObjects;
+        public float AtmosphericDrag ;
         public float planetR;
         public float frequency;
         public int iterations;
@@ -421,6 +449,13 @@ public class PlanetGenerator : MonoBehaviour
         public float Intensity;
         public GameObject planetGameObject;
         public float OceanNoiseIntensity;
+
+        public float _BiomTransotionNum;
+        public float _BiomNoiseFrequency;
+        public float _BiomNoiseIterations;
+        public float _BiomNoiseIterationSize;
+        public float _BiomNoisePower;
+        public float _BiomNoiseIntensity;
     }
 
     [System.Serializable]
@@ -445,7 +480,7 @@ public class PlanetGenerator : MonoBehaviour
                 newchunk.chunkSide = chunkSide;
                 newchunk.chunkSize = newchunkSize;
                 
-                GameObject newChunkGameObject = GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, this.planetData);
+                GameObject newChunkGameObject = GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, this.planetData,false);
 
                 newchunk.chunkWorldPos = newChunkGameObject.GetComponent<MeshFilter>().mesh.vertices[(vertextSideCount * vertextSideCount) /2+ vertextSideCount/2];
                
@@ -469,7 +504,7 @@ public class PlanetGenerator : MonoBehaviour
             }
         }
     }
-    static GameObject GeneratePlane(Vector2 posOnSphere, float planeLength, int whatSide,PlanetData planetdata)
+    static GameObject GeneratePlane(Vector2 posOnSphere, float planeLength, int whatSide,PlanetData planetdata ,bool CreateGrass)
     {
         int vertextTotalCount = vertextSideCount * vertextSideCount;
 
@@ -479,6 +514,19 @@ public class PlanetGenerator : MonoBehaviour
         ComputeBuffer posComputeBuffer = new ComputeBuffer(vertextTotalCount, sizeof(float) * 3);
         ComputeBuffer norComputeBuffer = new ComputeBuffer(vertextTotalCount, sizeof(float) * 3);
         ComputeBuffer uvComputeBuffer = new ComputeBuffer(vertextTotalCount, sizeof(float) * 2);
+
+        int typeInfoSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(TypeInfo));
+        // Create a buffer to hold the TypeInfo array
+        ComputeBuffer typeInfoBuffer = new ComputeBuffer(planetdata.PlanetTypeInfo.Length, typeInfoSize);
+        typeInfoBuffer.SetData(planetdata.PlanetTypeInfo);
+
+        int objectInfoSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(objectInfo));
+        // Create a buffer to hold the TypeInfo array
+        ComputeBuffer objectInfoBuffer = new ComputeBuffer(vertextTotalCount, objectInfoSize);
+
+        ComputeBuffer resultObjectsSizeComputeBuffer = new ComputeBuffer(1, sizeof(int) );
+        resultObjectsSizeComputeBuffer.SetData(new List<int>() { 0 });
+        // Bind the buffer to the compute shader
 
         // Set new plane parameters
         computeShader.SetFloat("gridSize", vertextSideCount);
@@ -495,9 +543,23 @@ public class PlanetGenerator : MonoBehaviour
         computeShader.SetFloat("Intensity", planetdata.Intensity); 
         computeShader.SetFloat("OceanNoiseIntensity", planetdata.OceanNoiseIntensity);
 
+        computeShader.SetFloat("_BiomNoiseFrequency", planetdata._BiomNoiseFrequency );
+        computeShader.SetFloat("_BiomNoiseIntensity", planetdata._BiomNoiseIntensity);
+        computeShader.SetFloat("_BiomNoiseIterations", planetdata._BiomNoiseIterations);
+        computeShader.SetFloat("_BiomNoiseIterationSize", planetdata._BiomNoiseIterationSize);
+        computeShader.SetFloat("_BiomNoisePower", planetdata._BiomNoisePower);
+        computeShader.SetFloat("_BiomTransotionNum", planetdata._BiomTransotionNum);
+
+        computeShader.SetInt("resultObjectsSize", 0);
+
         computeShader.SetBuffer(kernelHandle, "positions", posComputeBuffer);
         computeShader.SetBuffer(kernelHandle, "normals", norComputeBuffer);
         computeShader.SetBuffer(kernelHandle, "UVs", uvComputeBuffer);
+
+        computeShader.SetBuffer(kernelHandle, "typeInfos", typeInfoBuffer);
+
+        computeShader.SetBuffer(kernelHandle, "resultObjects", objectInfoBuffer);
+        computeShader.SetBuffer(kernelHandle, "resultObjectsSize", resultObjectsSizeComputeBuffer);
 
         // Dispatch compute shader
         computeShader.Dispatch(kernelHandle, vertextSideCount / 16, vertextSideCount / 16, 1);
@@ -506,15 +568,21 @@ public class PlanetGenerator : MonoBehaviour
         Vector3[] positions = new Vector3[vertextTotalCount];
         Vector3[] normals = new Vector3[vertextTotalCount];
         Vector2[] uvs = new Vector2[vertextTotalCount];
+        objectInfo[] objectInf = new objectInfo[vertextTotalCount];
+        int[] objectInfCount = new int[1];
 
         posComputeBuffer.GetData(positions);
         norComputeBuffer.GetData(normals);
         uvComputeBuffer.GetData(uvs);
+        objectInfoBuffer.GetData(objectInf);
+        resultObjectsSizeComputeBuffer.GetData(objectInfCount);
 
         // Release compute buffers
         posComputeBuffer.Release();
         norComputeBuffer.Release();
         uvComputeBuffer.Release();
+        objectInfoBuffer.Release();
+        resultObjectsSizeComputeBuffer.Release();
 
         // Create mesh
         Mesh planeMesh = new Mesh
@@ -542,9 +610,30 @@ public class PlanetGenerator : MonoBehaviour
 
         plane.transform.parent = planetdata.planetGameObject.transform;
 
+        GameObject ObjectParent = new GameObject();
+        ObjectParent.transform.parent = plane.transform;
+
+        for (int i = 0; i < objectInfCount[0]; i++)
+        {
+            //print("type" + objectInf[i].type.ToString() );
+            GameObject newGameobject = Instantiate(planetdata.PlanetTypeInfoObjects[objectInf[i].type]);
+            newGameobject.transform.position = objectInf[i].pos;
+            newGameobject.transform.rotation = new Quaternion(objectInf[i].rot.x, objectInf[i].rot.y, objectInf[i].rot.z, objectInf[i].rot.w);
+            newGameobject.transform.parent = ObjectParent.transform;
+        }
+
+        if (CreateGrass == true)
+        {
+            GameObject grassPlane = Instantiate(plane);
+
+            grassPlane.GetComponent<MeshRenderer>().material = grassMaterial;
+            grassPlane.transform.parent = plane.transform;
+        }
+        
         return plane;
     }
 
+    /*
     static GPUinstanceData generateGrassGPUinstanceData(Vector2 posOnSphere, float planeLength, int whatSide, PlanetData planetdata)
     {
         
@@ -595,5 +684,5 @@ public class PlanetGenerator : MonoBehaviour
         data.material = grassMaterial;
         data.colors = colors;
         return data;
-    }   
+    }   */
 }

@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class playerControler : MonoBehaviour
-{   
-    public float moveForce = 10f;
+{
+    public float GroundMoveForce = 10f;
+    public float SpaceMoveForce = 10f;
     public float sensitivity = 5.0f; // Sensitivity of mouse movement
     void Start()
     {
@@ -33,26 +34,21 @@ public class playerControler : MonoBehaviour
             }
         }
 
+        float Force = 0;
+
         if (isonPlanet == false)
         {
+            Force = SpaceMoveForce;
             float mouseX = Input.GetAxis("Mouse X") * sensitivity;
             float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
 
             // Rotate the object locally based on mouse movements
-            transform.Rotate(Vector3.up, mouseX, Space.Self); // Rotate around the object's Y-axis
+            transform.Rotate(Vector3.back*-1, mouseX, Space.Self); // Rotate around the object's Y-axis
             transform.Rotate(Vector3.left, mouseY, Space.Self); // Rotate around the object's X-axis
-
-            if (Input.GetKey(KeyCode.Space))
-            {
-                // Calculate the direction to move based on the object's forward vector
-                Vector3 moveDirection = transform.forward;
-
-                // Apply force in the direction the object is facing
-                gameObject.GetComponent<Rigidbody>().AddForce(moveDirection * moveForce, ForceMode.Force);
-            }
         }
         else
         {
+            Force = GroundMoveForce;
             Vector3 planetPos = curentPlanet.planetData.planetGameObject.transform.position;
 
             Vector3 direction = (planetPos - transform.position).normalized;
@@ -71,17 +67,33 @@ public class playerControler : MonoBehaviour
             YRotation = Mathf.Clamp(YRotation, -80, 80);
             transform.GetChild(0).localEulerAngles = Vector3.left * YRotation;
 
-            if (Input.GetKey(KeyCode.Space))
-            {
-                // Calculate the direction to move based on the object's forward vector
-                Vector3 moveDirection = transform.forward;
+            transform.gameObject.GetComponent<Rigidbody>().drag = curentPlanet.planetData.AtmosphericDrag;
+            transform.gameObject.GetComponent<Rigidbody>().angularDrag = curentPlanet.planetData.AtmosphericDrag;
+        }
 
-                // Apply force in the direction the object is facing
-                gameObject.GetComponent<Rigidbody>().AddForce(moveDirection * moveForce, ForceMode.Force);
-            }
+        float up = 0;
+        if (Input.GetKey(KeyCode.Space))
+        {
+            up += 1;
+        }
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            up -= 1;
+        }
 
+        Vector3 movement = new Vector3(Input.GetAxis("Vertical"), up , Input.GetAxis("Horizontal"));
 
+        if (movement.x != 0 | movement.y != 0 | movement.z != 0)
+        {
+            // Calculate the direction to move based on the object's forward vector
+            Vector3 moveDirectionForward = transform.GetChild(0).forward;
+            Vector3 moveDirectionUp = transform.GetChild(0).up;
+            Vector3 moveDirectionRight = transform.GetChild(0).right;
 
+            Vector3 final = moveDirectionForward* movement.x + moveDirectionUp* movement.y + moveDirectionRight*movement.z;
+
+            // Apply force in the direction the object is facing
+            gameObject.GetComponent<Rigidbody>().AddForce(final * Force, ForceMode.Force);
         }
     }
 
@@ -95,7 +107,8 @@ public class playerControler : MonoBehaviour
 
                 float distance = Vector3.Distance(transform.position, planetPos);
 
-                float totalMul = (gravityIntensity * planet.planetData.planetR) / distance;
+                float planetMass = Mathf.Pow(planet.planetData.planetR, 3) * Mathf.PI * (4/3);
+                float totalMul = (planetMass / (distance* distance) ) * gravityIntensity;
 
                 Vector3 dir = planetPos - transform.position;
 

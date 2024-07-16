@@ -148,9 +148,13 @@ Shader "Custom/PlanetGroundShader"
 
         struct Input
         {
+            float biomNum;
+            float cliffnum;
+            float BasicTransitionNum;
+
             float2 uv_Biom1MainTex;
             float3 normal; 
-            float3 worldPos;      
+            float3 worldPos;                   
             INTERNAL_DATA
         };
 
@@ -168,7 +172,27 @@ Shader "Custom/PlanetGroundShader"
 
        void vert (inout appdata_full v, out Input o) {
           UNITY_INITIALIZE_OUTPUT(Input,o);
-          o.normal = abs(v.normal);
+
+          float3 relativePos = v.vertex ;
+
+          float TerrainNoiseValue1 = generateComplexGradientNoise(relativePos, _NoiseFrequency, _NoiseIterations, _NoiseIterationSize, _NoisePower, _NoiseIntensity);
+          //float TerrainNoiseValue2 = generateComplexGradientNoise(relativePos+float3(1000,1000,1000), _NoiseFrequency, _NoiseIterations, _NoiseIterationSize, _NoisePower, _NoiseIntensity);
+          //float TerrainNoiseValue3 = generateComplexGradientNoise(relativePos+float3(5000,5000,5000), _NoiseFrequency, _NoiseIterations, _NoiseIterationSize, _NoisePower, _NoiseIntensity);
+
+          float BiomNoiseValue = generateComplexGradientNoise(relativePos+float3(-1000,-1000,-1000), _BiomNoiseFrequency, _BiomNoiseIterations, _BiomNoiseIterationSize, _BiomNoisePower, _BiomNoiseIntensity);
+
+          float lerpDivideValue =  (_NoiseIntensity*_NoiseIterations);
+          float3 terrainColorChange = pow( TerrainNoiseValue1 / lerpDivideValue ,_transitionNum);
+
+          float BiomChange = pow( BiomNoiseValue / _BiomNoiseIterations ,_BiomTransotionNum);
+          BiomChange = clamp(BiomChange,0,1);
+
+          float howMuchpointingToTheSides =  clamp ( dot( abs(v.normal) ,normalize( abs( relativePos)) ), 0,1) ;
+          howMuchpointingToTheSides = pow( howMuchpointingToTheSides,_CliffSize);
+
+          o.biomNum = BiomChange;
+          o.cliffnum = howMuchpointingToTheSides;
+          o.BasicTransitionNum = terrainColorChange;
        }
 
        void surf (Input IN, inout SurfaceOutput  o)
@@ -187,32 +211,15 @@ Shader "Custom/PlanetGroundShader"
            fixed3 normalCliff1 = UnpackNormal(tex2D(_Biom1CliffNormalMap, uv));
            fixed3 normalBiom2_1 = UnpackNormal(tex2D(_Biom2NormalMap, uv));
            fixed3 normalCliff2 = UnpackNormal(tex2D(_Biom2CliffNormalMap, uv));
+        
+           float3 terrainColor1 = lerp(albedoCliff1,albedo1 * IN.BasicTransitionNum,IN.cliffnum);
+           float3 terrainNormalColor1 = lerp(normalCliff1,normalMap1,IN.cliffnum);
 
-           float3 relativePos = IN.worldPos - _PlanetPosition;
+           float3 terrainColor2 = lerp(albedoCliff2,albedoBiom2_1 * IN.BasicTransitionNum,IN.cliffnum);
+           float3 terrainNormalColor2 = lerp(normalCliff2,normalBiom2_1,IN.cliffnum);
 
-           float TerrainNoiseValue1 = generateComplexGradientNoise(relativePos, _NoiseFrequency, _NoiseIterations, _NoiseIterationSize, _NoisePower, _NoiseIntensity);
-           float TerrainNoiseValue2 = generateComplexGradientNoise(relativePos+float3(1000,1000,1000), _NoiseFrequency, _NoiseIterations, _NoiseIterationSize, _NoisePower, _NoiseIntensity);
-           float TerrainNoiseValue3 = generateComplexGradientNoise(relativePos+float3(5000,5000,5000), _NoiseFrequency, _NoiseIterations, _NoiseIterationSize, _NoisePower, _NoiseIntensity);
-
-           float BiomNoiseValue = generateComplexGradientNoise(relativePos+float3(-1000,-1000,-1000), _BiomNoiseFrequency, _BiomNoiseIterations, _BiomNoiseIterationSize, _BiomNoisePower, _BiomNoiseIntensity);
-
-           float lerpDivideValue =  (_NoiseIntensity*_NoiseIterations);
-           float3 terrainColorChange = pow( float3(TerrainNoiseValue1 / lerpDivideValue ,TerrainNoiseValue2 / lerpDivideValue ,TerrainNoiseValue3 / lerpDivideValue ),_transitionNum);
-
-           float BiomChange = pow( BiomNoiseValue / _BiomNoiseIterations ,_BiomTransotionNum);
-           BiomChange = clamp(BiomChange,0,1);
-
-           float howMuchpointingToTheSides =  clamp ( dot(IN.normal ,normalize( abs( IN.worldPos)) ), 0,1) ;
-           howMuchpointingToTheSides = pow( howMuchpointingToTheSides,_CliffSize);
-
-           float3 terrainColor1 = lerp(albedoCliff1,albedo1 * terrainColorChange,howMuchpointingToTheSides);
-           float3 terrainNormalColor1 = lerp(normalCliff1,normalMap1,howMuchpointingToTheSides);
-
-           float3 terrainColor2 = lerp(albedoCliff2,albedoBiom2_1 * terrainColorChange,howMuchpointingToTheSides);
-           float3 terrainNormalColor2 = lerp(normalCliff2,normalBiom2_1,howMuchpointingToTheSides);
-
-           float3 FinalTerrainColor2 = lerp(terrainColor1,terrainColor2,BiomChange);
-           float3 FinalTerrainNormalColor2 = lerp(terrainNormalColor1,terrainNormalColor2,BiomChange);
+           float3 FinalTerrainColor2 = lerp(terrainColor1,terrainColor2,IN.biomNum);
+           float3 FinalTerrainNormalColor2 = lerp(terrainNormalColor1,terrainNormalColor2,IN.biomNum);
 
            // Metallic and smoothness come from slider variables
            o.Specular = _Metallic;

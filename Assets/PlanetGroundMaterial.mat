@@ -130,20 +130,20 @@ Material:
     m_Ints: []
     m_Floats:
     - _BiomNoiseFrequency: 0.001
-    - _BiomNoiseIntensity: 6.47
-    - _BiomNoiseIterationSize: 1.2
-    - _BiomNoiseIterations: 18.41
+    - _BiomNoiseIntensity: 3.8
+    - _BiomNoiseIterationSize: 1.83
+    - _BiomNoiseIterations: 4
     - _BiomNoisePower: 1
-    - _BiomTransotionNum: 16.72
+    - _BiomTransotionNum: 7.77
     - _CliffSize: 5.21
     - _Glossiness: 0
     - _LightIntensity: 1
     - _Metallic: 0
-    - _NoiseFrequency: 0.19
-    - _NoiseIntensity: 1
-    - _NoiseIterationSize: 1.31
-    - _NoiseIterations: 6.33
-    - _NoisePower: 1.07
+    - _NoiseFrequency: 0.21
+    - _NoiseIntensity: 20.42
+    - _NoiseIterationSize: 1.47
+    - _NoiseIterations: 4
+    - _NoisePower: 1.96
     - _PlanetR: 0
     - _Shininess: 0.501
     - _TextureIndex: 0

@@ -14,6 +14,33 @@ float Intensity = 2.0f;
 int whatSide = 1;
 float OceanNoiseIntensity;
 
+float _BiomTransotionNum;
+float _BiomNoiseFrequency;
+float _BiomNoiseIterations;
+float _BiomNoiseIterationSize;
+float _BiomNoisePower;
+float _BiomNoiseIntensity;
+
+struct TypeInfo
+{
+     int type;
+     int whatBiome;
+     float rarity;
+     int OnSide1JustUp0;
+     float plusYpos;
+};
+RWStructuredBuffer<TypeInfo> typeInfos;
+
+struct objectInfo
+{
+     float3 pos;
+     float4 rot;
+     int type;
+};
+
+RWStructuredBuffer<int> resultObjectsSize; 
+RWStructuredBuffer<objectInfo> resultObjects;
+
 RWStructuredBuffer<float3> positions;
 RWStructuredBuffer<float3> normals;
 RWStructuredBuffer<float2> UVs;
@@ -99,6 +126,24 @@ float generateComplexGradientNoise(float3 pos, float frequency, int iterations, 
     
     return gradientNoiseValue * intensity *GenerateGradientNoise(pos*oceanNoiseIntensity);
 }
+float generateComplexBiomGradientNoise(float3 pos, float frequency, int iterations, float iterationSize, float power, float intensity) {
+
+    float gradientNoiseValue = 0.0;
+
+    float mountenrelativeSize = 1.0;
+    float mountenrelativeDistortion = 1.0;
+
+    for (int i = 0; i < iterations; i++) {         
+        float gradientNoiseValuePlus = GenerateGradientNoise(pos * frequency * mountenrelativeDistortion) * mountenrelativeSize;
+        
+        gradientNoiseValue += pow(abs( gradientNoiseValuePlus), power);
+
+        mountenrelativeSize /= iterationSize;
+        mountenrelativeDistortion *= iterationSize;
+    }
+    
+    return gradientNoiseValue * intensity;
+}
 
 float3 CalculatePosOnPlanet(float3 pos) {
     float3 SpherePosition = normalize(pos) * planetR;
@@ -145,6 +190,72 @@ float3 CalculateNormalDir(float3 finalPos)
     return normal;
 }
 
+float4 NormalToQuaternion(float3 normal)
+{
+    // Calculate axis and angle to rotate (0, 0, 1) to 'normal'
+    float3 axis = cross(float3(0, 0, 1), normal);
+    float angle = acos(dot(float3(0, 0, 1), normal));
+
+    // Convert axis-angle to quaternion
+    float halfAngle = angle * 0.5;
+    float s = sin(halfAngle);
+    float4 q;
+    q.xyz = axis * s;
+    q.w = cos(halfAngle);
+
+    return q;
+}
+float biomCalculations(float3 pos)
+{
+    float BiomNoiseValue = generateComplexBiomGradientNoise(pos+float3(-1000,-1000,-1000), _BiomNoiseFrequency, _BiomNoiseIterations, _BiomNoiseIterationSize, _BiomNoisePower, _BiomNoiseIntensity);
+
+    return pow( BiomNoiseValue / _BiomNoiseIterations ,_BiomTransotionNum);
+}
+
+void AddResultObjects(float3 pos, float3 normal)
+{
+    float biomValue = biomCalculations(pos);
+
+    for (int i = 0; i < typeInfos.Length; i++)
+    {
+         TypeInfo typeInfo = typeInfos[i];
+
+         float chanceOfGenerating = 1;
+
+         if(typeInfo.whatBiome == 0)
+         {
+             chanceOfGenerating = 100 ; //chanceOfGenerating * (1- biomValue);
+         }else
+         {
+            chanceOfGenerating = chanceOfGenerating *  biomValue;
+         }     
+         
+         float DoGenerate =  chanceOfGenerating;
+
+         if(DoGenerate<1)
+         {
+            
+             resultObjects[resultObjectsSize[0]].pos = pos;
+             resultObjects[resultObjectsSize[0]].type = i;
+
+             float3 normal;
+             if(typeInfo.OnSide1JustUp0 ==1)
+             {
+                 normal = normal;
+             }else
+             {
+                 normal = normalize(pos);
+             }
+
+             resultObjects[resultObjectsSize[0]].pos += normal * typeInfo.plusYpos;
+
+             resultObjects[resultObjectsSize[0]].rot = NormalToQuaternion(normal);
+           
+             resultObjectsSize[0] = resultObjectsSize[0] + 1;
+         }
+    }
+}
+
 [numthreads(16, 16, 1)]
 void VertexGive(uint3 id : SV_DispatchThreadID) {
     float index = id.x * gridSize + id.y;
@@ -185,4 +296,6 @@ void VertexGive(uint3 id : SV_DispatchThreadID) {
     positions[index] = CalculatePosOnPlanet(CubePosition);
     normals[index] = CalculateNormalDir(positions[index]);
     UVs[index] = float2(id.x, id.y);
+
+    AddResultObjects(positions[index],normals[index]);
 }
