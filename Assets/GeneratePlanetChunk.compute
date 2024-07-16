@@ -212,7 +212,7 @@ float biomCalculations(float3 pos)
     return pow( BiomNoiseValue / _BiomNoiseIterations ,_BiomTransotionNum);
 }
 
-void AddResultObjects(float3 pos, float3 normal)
+void AddResultObjects(float3 pos, float3 normal )
 {
     float biomValue = biomCalculations(pos);
 
@@ -251,7 +251,6 @@ void AddResultObjects(float3 pos, float3 normal)
 
              resultObjects[resultObjectsSize[0]].rot = NormalToQuaternion(normal);
            
-             resultObjectsSize[0] = resultObjectsSize[0] + 1;
          }
     }
 }
