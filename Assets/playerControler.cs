@@ -43,7 +43,7 @@ public class playerControler : MonoBehaviour
             float mouseY = Input.GetAxis("Mouse Y") * sensitivity;
 
             // Rotate the object locally based on mouse movements
-            transform.Rotate(Vector3.back*-1, mouseX, Space.Self); // Rotate around the object's Y-axis
+            transform.Rotate(Vector3.down*-1, mouseX, Space.Self); // Rotate around the object's Y-axis
             transform.Rotate(Vector3.left, mouseY, Space.Self); // Rotate around the object's X-axis
         }
         else

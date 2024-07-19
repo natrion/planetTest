@@ -36,10 +36,10 @@ struct objectInfo
      float3 pos;
      float4 rot;
      int type;
+     int done;
 };
 
-RWStructuredBuffer<int> resultObjectsSize; 
-RWStructuredBuffer<objectInfo> resultObjects;
+AppendStructuredBuffer<objectInfo> resultObjects;
 
 RWStructuredBuffer<float3> positions;
 RWStructuredBuffer<float3> normals;
@@ -212,48 +212,71 @@ float biomCalculations(float3 pos)
     return pow( BiomNoiseValue / _BiomNoiseIterations ,_BiomTransotionNum);
 }
 
-void AddResultObjects(float3 pos, float3 normal )
+void AddResultObjects(float3 pos, float3 normal)
 {
     float biomValue = biomCalculations(pos);
+
+    float DoGenerates[20];
 
     for (int i = 0; i < typeInfos.Length; i++)
     {
          TypeInfo typeInfo = typeInfos[i];
 
-         float chanceOfGenerating = 1;
-
+         float chanceOfGenerating = typeInfo.rarity;
+        
          if(typeInfo.whatBiome == 0)
          {
-             chanceOfGenerating = 100 ; //chanceOfGenerating * (1- biomValue);
+            biomValue = clamp( biomValue *5 ,1,1000);;
+            chanceOfGenerating = chanceOfGenerating; //* ((1- biomValue) +1 );
          }else
          {
-            chanceOfGenerating = chanceOfGenerating *  biomValue;
+            biomValue =clamp( (3/biomValue ),1,1000);
+            chanceOfGenerating = chanceOfGenerating; //*  (biomValue+1);
          }     
          
-         float DoGenerate =  chanceOfGenerating;
+         DoGenerates[i] =hash(pos+float3(100,100,100)*i) * chanceOfGenerating;       
+    }
+    int what = 0;
+    float best = 10000000;
+    for (int i = 0; i < typeInfos.Length; i++)
+    {
+        if(DoGenerates[i] < best){
+            best = DoGenerates[i];
+            what = i;
+        }  
+    }
+    if(0<1)
+    {
+        TypeInfo typeInfo = typeInfos[what];  
 
-         if(DoGenerate<1)
-         {
-            
-             resultObjects[resultObjectsSize[0]].pos = pos;
-             resultObjects[resultObjectsSize[0]].type = i;
+        objectInfo newObjectInfo;
 
-             float3 normal;
-             if(typeInfo.OnSide1JustUp0 ==1)
-             {
-                 normal = normal;
-             }else
-             {
-                 normal = normalize(pos);
-             }
+        newObjectInfo.pos = pos;
+        newObjectInfo.type = what ;
 
-             resultObjects[resultObjectsSize[0]].pos += normal * typeInfo.plusYpos;
+        float3 normal;
+        if(typeInfo.OnSide1JustUp0 ==1)
+        {
+            normal = normal;
+        }else
+        {
+            normal = normalize(pos);
+        }
 
-             resultObjects[resultObjectsSize[0]].rot = NormalToQuaternion(normal);
-           
-         }
+        newObjectInfo.pos += normal * typeInfo.plusYpos;
+
+        newObjectInfo.rot = NormalToQuaternion(normal);           
+
+        newObjectInfo.done = 1;
+
+        newObjectInfo.pos.x = DoGenerates[0];
+        newObjectInfo.pos.y = DoGenerates[1];
+
+        resultObjects.Append(newObjectInfo);
     }
 }
+
+bool canCreateObjects;
 
 [numthreads(16, 16, 1)]
 void VertexGive(uint3 id : SV_DispatchThreadID) {
@@ -296,5 +319,8 @@ void VertexGive(uint3 id : SV_DispatchThreadID) {
     normals[index] = CalculateNormalDir(positions[index]);
     UVs[index] = float2(id.x, id.y);
 
-    AddResultObjects(positions[index],normals[index]);
+    if(canCreateObjects == true)
+    {
+        AddResultObjects(positions[index],normals[index]  );
+    }
 }

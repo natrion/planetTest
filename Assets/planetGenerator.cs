@@ -207,7 +207,7 @@ public class PlanetGenerator : MonoBehaviour
         }
         */
         
-        public void loadChunks(PlanetData planet)
+        public async Task loadChunks(PlanetData planet)
         {
             float chunkPlayerDistance = Vector3.Distance(chunkWorldPos, player.transform.position);
 
@@ -296,12 +296,12 @@ public class PlanetGenerator : MonoBehaviour
 
                             if (newchunkSize / chunkInChunkSideNum < MinChunkSize)
                             {
-                                newChunkGameObject = GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, planet, true);
+                                newChunkGameObject = await GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, planet, true,true);
                                 newChunkGameObject.AddComponent<MeshCollider>();
                             }
                             else
                             {
-                                newChunkGameObject = GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, planet, false);
+                                newChunkGameObject = await GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, planet, false,false);
                             }
 
                             newchunk.chunk = newChunkGameObject;
@@ -424,6 +424,7 @@ public class PlanetGenerator : MonoBehaviour
         public Vector3 pos;
         public Vector4 rot;
         public int type;
+        public int done;
     };
     [System.Serializable]
     public struct TypeInfo
@@ -459,11 +460,15 @@ public class PlanetGenerator : MonoBehaviour
     }
 
     [System.Serializable]
-    public class Planet
+    public class Planet 
     {     
         public PlanetData planetData;
         public List<Chunk> chunks;
         public Planet(PlanetData planetData)
+        {
+            CreatePlanet(planetData);
+        }
+        public async Task CreatePlanet(PlanetData planetData)
         {
             
             this.planetData = planetData;
@@ -480,7 +485,7 @@ public class PlanetGenerator : MonoBehaviour
                 newchunk.chunkSide = chunkSide;
                 newchunk.chunkSize = newchunkSize;
                 
-                GameObject newChunkGameObject = GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, this.planetData,false);
+                GameObject newChunkGameObject = await GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, this.planetData,false,false);
 
                 newchunk.chunkWorldPos = newChunkGameObject.GetComponent<MeshFilter>().mesh.vertices[(vertextSideCount * vertextSideCount) /2+ vertextSideCount/2];
                
@@ -504,8 +509,17 @@ public class PlanetGenerator : MonoBehaviour
             }
         }
     }
-    static GameObject GeneratePlane(Vector2 posOnSphere, float planeLength, int whatSide,PlanetData planetdata ,bool CreateGrass)
+    public static bool isMaking = false; 
+    static async Task<GameObject> GeneratePlane(Vector2 posOnSphere, float planeLength, int whatSide,PlanetData planetdata ,bool CreateGrass , bool CreateObjects)
     {
+        isMaking = true;
+        while (isMaking == false)
+        {
+            await Task.Delay(10);
+        }
+
+        
+
         int vertextTotalCount = vertextSideCount * vertextSideCount;
 
         int kernelHandle = computeShader.FindKernel("VertexGive");
@@ -522,10 +536,8 @@ public class PlanetGenerator : MonoBehaviour
 
         int objectInfoSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(objectInfo));
         // Create a buffer to hold the TypeInfo array
-        ComputeBuffer objectInfoBuffer = new ComputeBuffer(vertextTotalCount, objectInfoSize);
+        ComputeBuffer objectInfoBuffer = new ComputeBuffer(vertextTotalCount * 2, objectInfoSize, ComputeBufferType.Append);
 
-        ComputeBuffer resultObjectsSizeComputeBuffer = new ComputeBuffer(1, sizeof(int) );
-        resultObjectsSizeComputeBuffer.SetData(new List<int>() { 0 });
         // Bind the buffer to the compute shader
 
         // Set new plane parameters
@@ -550,8 +562,6 @@ public class PlanetGenerator : MonoBehaviour
         computeShader.SetFloat("_BiomNoisePower", planetdata._BiomNoisePower);
         computeShader.SetFloat("_BiomTransotionNum", planetdata._BiomTransotionNum);
 
-        computeShader.SetInt("resultObjectsSize", 0);
-
         computeShader.SetBuffer(kernelHandle, "positions", posComputeBuffer);
         computeShader.SetBuffer(kernelHandle, "normals", norComputeBuffer);
         computeShader.SetBuffer(kernelHandle, "UVs", uvComputeBuffer);
@@ -559,7 +569,9 @@ public class PlanetGenerator : MonoBehaviour
         computeShader.SetBuffer(kernelHandle, "typeInfos", typeInfoBuffer);
 
         computeShader.SetBuffer(kernelHandle, "resultObjects", objectInfoBuffer);
-        computeShader.SetBuffer(kernelHandle, "resultObjectsSize", resultObjectsSizeComputeBuffer);
+        computeShader.SetBool("canCreateObjects", CreateObjects);
+        // Clear the append buffer
+        objectInfoBuffer.SetCounterValue(0);
 
         // Dispatch compute shader
         computeShader.Dispatch(kernelHandle, vertextSideCount / 16, vertextSideCount / 16, 1);
@@ -568,21 +580,18 @@ public class PlanetGenerator : MonoBehaviour
         Vector3[] positions = new Vector3[vertextTotalCount];
         Vector3[] normals = new Vector3[vertextTotalCount];
         Vector2[] uvs = new Vector2[vertextTotalCount];
-        objectInfo[] objectInf = new objectInfo[vertextTotalCount];
-        int[] objectInfCount = new int[1];
+        objectInfo[] objectInf = new objectInfo[vertextTotalCount*2];
 
         posComputeBuffer.GetData(positions);
         norComputeBuffer.GetData(normals);
         uvComputeBuffer.GetData(uvs);
         objectInfoBuffer.GetData(objectInf);
-        resultObjectsSizeComputeBuffer.GetData(objectInfCount);
 
         // Release compute buffers
         posComputeBuffer.Release();
         norComputeBuffer.Release();
         uvComputeBuffer.Release();
         objectInfoBuffer.Release();
-        resultObjectsSizeComputeBuffer.Release();
 
         // Create mesh
         Mesh planeMesh = new Mesh
@@ -610,18 +619,6 @@ public class PlanetGenerator : MonoBehaviour
 
         plane.transform.parent = planetdata.planetGameObject.transform;
 
-        GameObject ObjectParent = new GameObject();
-        ObjectParent.transform.parent = plane.transform;
-
-        for (int i = 0; i < objectInfCount[0]; i++)
-        {
-            //print("type" + objectInf[i].type.ToString() );
-            GameObject newGameobject = Instantiate(planetdata.PlanetTypeInfoObjects[objectInf[i].type]);
-            newGameobject.transform.position = objectInf[i].pos;
-            newGameobject.transform.rotation = new Quaternion(objectInf[i].rot.x, objectInf[i].rot.y, objectInf[i].rot.z, objectInf[i].rot.w);
-            newGameobject.transform.parent = ObjectParent.transform;
-        }
-
         if (CreateGrass == true)
         {
             GameObject grassPlane = Instantiate(plane);
@@ -629,7 +626,36 @@ public class PlanetGenerator : MonoBehaviour
             grassPlane.GetComponent<MeshRenderer>().material = grassMaterial;
             grassPlane.transform.parent = plane.transform;
         }
-        
+
+        if (CreateObjects == true)
+        {
+            GameObject ObjectParent = new GameObject("object parent");
+            ObjectParent.transform.parent = plane.transform;
+
+            bool isDone = false;
+            int i = 0;
+            while (isDone == false)
+            {
+                //print("type" + objectInf[i].type.ToString() );
+                if (objectInf[i].done == 1 & objectInf.Length - 1 > i)
+                {
+                    //GameObject newGameobject = Instantiate(planetdata.PlanetTypeInfoObjects[objectInf[i].type]);
+                    //newGameobject.transform.position = objectInf[i].pos;
+                    //newGameobject.transform.rotation = new Quaternion(objectInf[i].rot.x, objectInf[i].rot.y, objectInf[i].rot.z, objectInf[i].rot.w);
+                    //newGameobject.transform.parent = ObjectParent.transform;
+                    print("0: " + objectInf[i].pos.x + "   |   1: " + objectInf[i].pos.y +"   | type:"+ objectInf[i].type);
+                }
+                else
+                {
+                    isDone = true;
+                }
+                i++;
+            }
+        }
+
+
+        isMaking = false;
+
         return plane;
     }
 
