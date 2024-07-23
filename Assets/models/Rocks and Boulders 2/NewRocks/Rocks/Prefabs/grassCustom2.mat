@@ -44,7 +44,7 @@ Material:
     - _BaseStages: -0.3
     - _BendRotationRandom: 0.2
     - _BiomNoiseFrequency: 0.001
-    - _BiomNoiseIntensity: 3.8
+    - _BiomNoiseIntensity: 1.5
     - _BiomNoiseIterationSize: 1.83
     - _BiomNoiseIterations: 4
     - _BiomNoisePower: 1
@@ -55,7 +55,7 @@ Material:
     - _BladeHeightRandom: 0.3
     - _BladeWidth: 0.03
     - _BladeWidthRandom: 0
-    - _CliffSize: 0.614
+    - _CliffSize: 0.514
     - _MaxStages: 4
     - _NoiseFrequency: 0.21
     - _NoiseIntensity: 1

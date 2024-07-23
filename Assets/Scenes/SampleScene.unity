@@ -724,27 +724,27 @@ MonoBehaviour:
     - type: 6
       whatBiome: 1
       rarity: 2000
-      OnSide1JustUp0: 0
+      OnSide1JustUp0: 1
       plusYpos: 0
     - type: 7
       whatBiome: 0
       rarity: 2000
-      OnSide1JustUp0: 0
+      OnSide1JustUp0: 1
       plusYpos: 0
     - type: 8
       whatBiome: 1
       rarity: 2000
-      OnSide1JustUp0: 0
+      OnSide1JustUp0: 1
       plusYpos: 0
     - type: 9
       whatBiome: 0
       rarity: 2000
-      OnSide1JustUp0: 0
+      OnSide1JustUp0: 1
       plusYpos: 0
     - type: 10
       whatBiome: 0
       rarity: 10000
-      OnSide1JustUp0: 0
+      OnSide1JustUp0: 1
       plusYpos: 0
     - type: 11
       whatBiome: 1
