@@ -294,10 +294,14 @@ public class PlanetGenerator : MonoBehaviour
                            
                             GameObject newChunkGameObject;
 
-                            if (newchunkSize / chunkInChunkSideNum < MinChunkSize)
+                            if (newchunkSize / chunkInChunkSideNum < MinChunkSize* chunkInChunkSideNum)
                             {
                                 newChunkGameObject = await GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, planet, true,true);
-                                newChunkGameObject.AddComponent<MeshCollider>();
+
+                                if (newchunkSize / chunkInChunkSideNum < MinChunkSize )
+                                {
+                                    newChunkGameObject.AddComponent<MeshCollider>();
+                                }
                             }
                             else
                             {
@@ -636,14 +640,16 @@ public class PlanetGenerator : MonoBehaviour
             int i = 0;
             while (isDone == false)
             {
-                //print("type" + objectInf[i].type.ToString() );
+              
                 if (objectInf[i].done == 1 & objectInf.Length - 1 > i)
                 {
-                    //GameObject newGameobject = Instantiate(planetdata.PlanetTypeInfoObjects[objectInf[i].type]);
-                    //newGameobject.transform.position = objectInf[i].pos;
-                    //newGameobject.transform.rotation = new Quaternion(objectInf[i].rot.x, objectInf[i].rot.y, objectInf[i].rot.z, objectInf[i].rot.w);
-                    //newGameobject.transform.parent = ObjectParent.transform;
-                    print("0: " + objectInf[i].pos.x + "   |   1: " + objectInf[i].pos.y +"   | type:"+ objectInf[i].type);
+                    //if (objectInf[i].type == 200)
+                    //{
+                        GameObject newGameobject = Instantiate(planetdata.PlanetTypeInfoObjects[objectInf[i].type]);
+                        newGameobject.transform.position = objectInf[i].pos;
+                        newGameobject.transform.rotation = new Quaternion(objectInf[i].rot.x, objectInf[i].rot.y, objectInf[i].rot.z, objectInf[i].rot.w);
+                        newGameobject.transform.parent = ObjectParent.transform;
+                   //}
                 }
                 else
                 {
@@ -651,6 +657,7 @@ public class PlanetGenerator : MonoBehaviour
                 }
                 i++;
             }
+            //print("lenght" + i);
         }
 
 

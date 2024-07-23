@@ -1,4 +1,5 @@
-#pragma kernel VertexGive
+ # pragma  kernel VertexGive
+ #define PI 3.14159265359
 
 float gridSize;
 float2 posOnSphere;
@@ -189,21 +190,36 @@ float3 CalculateNormalDir(float3 finalPos)
     // Return the normalized normal vector
     return normal;
 }
+float3 FindPerpendicularVector(float3 normal)
+{
+    // Define a reference vector (not collinear with normal)
+    float3 reference = abs(normal.x) < 0.99 ? float3(1, 0, 0) : float3(0, 1, 0);
 
+    // Compute the perpendicular vector using the cross product
+    float3 perpendicular = cross(normal, reference);
+
+    // Normalize the result to ensure it is a unit vector
+    perpendicular = normalize(perpendicular);
+
+    return perpendicular;
+}
 float4 NormalToQuaternion(float3 normal)
 {
-    // Calculate axis and angle to rotate (0, 0, 1) to 'normal'
-    float3 axis = cross(float3(0, 0, 1), normal);
-    float angle = acos(dot(float3(0, 0, 1), normal));
+    // Normalize the input normal vector
+    normal = normalize(normal);
+    
+    // Define the forward direction in Unity's coordinate system (float3(0, 0, 1))
+    float3 forward = float3(0, 1, 0);
+    
+    // Calculate the quaternion that rotates the forward vector to match the normal
+    float4 quat;
+    quat.xyz = cross(forward, normal);  // Get the axis of rotation
+    quat.w = sqrt(dot(forward, forward) * dot(normal, normal)) + dot(forward, normal); // Calculate the real part
 
-    // Convert axis-angle to quaternion
-    float halfAngle = angle * 0.5;
-    float s = sin(halfAngle);
-    float4 q;
-    q.xyz = axis * s;
-    q.w = cos(halfAngle);
+    // Normalize the quaternion to ensure it represents a valid rotation
+    quat = normalize(quat);
 
-    return q;
+    return quat;
 }
 float biomCalculations(float3 pos)
 {
@@ -212,9 +228,16 @@ float biomCalculations(float3 pos)
     return pow( BiomNoiseValue / _BiomNoiseIterations ,_BiomTransotionNum);
 }
 
-void AddResultObjects(float3 pos, float3 normal)
+float hash2(float3 p) {
+    p = frac(p * 0.1031);
+    p += dot(p, p.yzx + 33.33);
+    return frac((p.x + p.y) * p.z);
+}
+void AddResultObjects(float3 pos, float3 InputNormal)
 {
-    float biomValue = biomCalculations(pos);
+    float tileSize = planeLength / gridSize;
+
+    float biomValue =  biomCalculations(pos);
 
     float DoGenerates[20];
 
@@ -222,22 +245,36 @@ void AddResultObjects(float3 pos, float3 normal)
     {
          TypeInfo typeInfo = typeInfos[i];
 
-         float chanceOfGenerating = typeInfo.rarity;
+         float chanceOfGenerating = typeInfo.rarity /tileSize;
         
          if(typeInfo.whatBiome == 0)
          {
-            biomValue = clamp( biomValue *5 ,1,1000);;
-            chanceOfGenerating = chanceOfGenerating; //* ((1- biomValue) +1 );
+            float newBiomValue = clamp ((biomValue)+1,1,1000000);
+            chanceOfGenerating = chanceOfGenerating *  newBiomValue;
          }else
          {
-            biomValue =clamp( (3/biomValue ),1,1000);
-            chanceOfGenerating = chanceOfGenerating; //*  (biomValue+1);
+            float newBiomValue = clamp ((1/biomValue)+1,1,1000000);
+            chanceOfGenerating = chanceOfGenerating *  newBiomValue;
          }     
          
-         DoGenerates[i] =hash(pos+float3(100,100,100)*i) * chanceOfGenerating;       
+         DoGenerates[i] = hash2(pos+float3(100,100,100)*(i+1))* chanceOfGenerating;    
+         
+         float dividenum = 10;
+         int maxIterations = 10;
+         int iteration = 1;
+         while(DoGenerates[i] == 0)
+         {           
+             iteration++;
+             DoGenerates[i]  =( hash2(pos+float3(100,100,100)*(i+1)*iteration )* chanceOfGenerating)/dividenum; 
+             dividenum*=10;
+             if(iteration>maxIterations)
+             {
+                 DoGenerates[i] = 0.001;
+             }
+         }
     }
-    int what = 0;
-    float best = 10000000;
+    int what = -1;
+    float best = 100000000;
     for (int i = 0; i < typeInfos.Length; i++)
     {
         if(DoGenerates[i] < best){
@@ -245,7 +282,7 @@ void AddResultObjects(float3 pos, float3 normal)
             what = i;
         }  
     }
-    if(0<1)
+    if(best<1)
     {
         TypeInfo typeInfo = typeInfos[what];  
 
@@ -257,7 +294,7 @@ void AddResultObjects(float3 pos, float3 normal)
         float3 normal;
         if(typeInfo.OnSide1JustUp0 ==1)
         {
-            normal = normal;
+            normal = InputNormal;
         }else
         {
             normal = normalize(pos);
@@ -267,10 +304,17 @@ void AddResultObjects(float3 pos, float3 normal)
 
         newObjectInfo.rot = NormalToQuaternion(normal);           
 
+        //newObjectInfo.rot.x = biomValue+1;
+        //newObjectInfo.rot.y = 1/biomValue+1;
+       // if(best == 0.001)
+       // {
+       //     newObjectInfo.type = 100;
+       //}
+
         newObjectInfo.done = 1;
 
-        newObjectInfo.pos.x = DoGenerates[0];
-        newObjectInfo.pos.y = DoGenerates[1];
+        //newObjectInfo.pos.x = DoGenerates[0];
+        //newObjectInfo.pos.y = DoGenerates[1];
 
         resultObjects.Append(newObjectInfo);
     }

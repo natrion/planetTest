@@ -1,4 +1,6 @@
-﻿Shader "Bytesized/GrassCustom"
+﻿// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
+Shader "Bytesized/GrassCustom"
 {
     Properties
     {
@@ -154,7 +156,7 @@
 	float4 getColor(float3 pos )
 	{
 		
-          float3 relativePos = pos ;
+          float3 relativePos = mul(unity_ObjectToWorld,pos).xyz - _PlanetPosition;
 
           float TerrainNoiseValue1 = generateComplexGradientNoise(relativePos, _NoiseFrequency, _NoiseIterations, _NoiseIterationSize, _NoisePower, _NoiseIntensity);
           float BiomNoiseValue = generateComplexGradientNoise(relativePos+float3(-1000,-1000,-1000), _BiomNoiseFrequency, _BiomNoiseIterations, _BiomNoiseIterationSize, _BiomNoisePower, _BiomNoiseIntensity);
@@ -222,7 +224,10 @@
 		*/
 		float3 pos = IN[0].vertex.xyz;
 
-		float howMuchpointingToTheSides =  clamp ( dot( abs(IN[0].normal) ,normalize( abs( pos)) ), 0,1) ;
+		float3 worldNormal =mul( unity_ObjectToWorld, float4( IN[0].normal, 0.0 ) ).xyz; 
+		float3 worldPos =mul(unity_ObjectToWorld, IN[0].vertex).xyz - _PlanetPosition;
+
+		float howMuchpointingToTheSides =   dot( worldNormal ,normalize(  worldPos) ) ;
 		if(howMuchpointingToTheSides>_CliffSize)
 		{
             /* Construct rotation 2 matrices, one to make the blade face in a random rotation and the other to make the blade bend into the direction its facing */

@@ -1,3 +1,9 @@
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
+// Upgrade NOTE: replaced '_Object2World' with 'unity_ObjectToWorld'
+
+// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
 Shader "Custom/PlanetGroundShader"
 {
     Properties
@@ -154,7 +160,6 @@ Shader "Custom/PlanetGroundShader"
 
             float2 uv_Biom1MainTex;
             float3 normal; 
-            float3 worldPos;                   
             INTERNAL_DATA
         };
 
@@ -170,10 +175,12 @@ Shader "Custom/PlanetGroundShader"
         float _NoiseIntensity;
 
 
-       void vert (inout appdata_full v, out Input o) {
-          UNITY_INITIALIZE_OUTPUT(Input,o);
 
-          float3 relativePos = v.vertex ;
+       void vert (inout appdata_full v, out Input o) {
+          
+
+          float4 worldPos = mul(unity_ObjectToWorld,v.vertex);
+          float3 relativePos = worldPos.xyz - _PlanetPosition ;
 
           float TerrainNoiseValue1 = generateComplexGradientNoise(relativePos, _NoiseFrequency, _NoiseIterations, _NoiseIterationSize, _NoisePower, _NoiseIntensity);
           //float TerrainNoiseValue2 = generateComplexGradientNoise(relativePos+float3(1000,1000,1000), _NoiseFrequency, _NoiseIterations, _NoiseIterationSize, _NoisePower, _NoiseIntensity);
@@ -187,12 +194,21 @@ Shader "Custom/PlanetGroundShader"
           float BiomChange = pow( BiomNoiseValue / _BiomNoiseIterations ,_BiomTransotionNum);
           BiomChange = clamp(BiomChange,0,1);
 
-          float howMuchpointingToTheSides =  clamp ( dot( abs(v.normal) ,normalize( abs( relativePos)) ), 0,1) ;
+          float3 worldNormal = mul( unity_ObjectToWorld, float4( v.normal, 0.0 ) ).xyz;
+
+          float howMuchpointingToTheSides =  dot( worldNormal ,normalize(  relativePos) );
+          if(howMuchpointingToTheSides<0)
+          {
+              howMuchpointingToTheSides = 0;
+          }
           howMuchpointingToTheSides = pow( howMuchpointingToTheSides,_CliffSize);
+
+          UNITY_INITIALIZE_OUTPUT(Input,o);
 
           o.biomNum = BiomChange;
           o.cliffnum = howMuchpointingToTheSides;
           o.BasicTransitionNum = terrainColorChange;
+
        }
 
        void surf (Input IN, inout SurfaceOutput  o)
