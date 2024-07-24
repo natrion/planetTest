@@ -453,7 +453,16 @@ public class PlanetGenerator : MonoBehaviour
         public float power;
         public float Intensity;
         public GameObject planetGameObject;
-        public float OceanNoiseIntensity;
+
+        public float OceanFreqency ;
+        public int OceanIterations ;
+        public float OceanIterationSize ;
+        public float OceanPower;
+        public float OceanIntensity ;
+
+        public float valleyHight; 
+        public float valleyDistortion; 
+        public float valleyPower;
 
         public float _BiomTransotionNum;
         public float _BiomNoiseFrequency;
@@ -556,8 +565,17 @@ public class PlanetGenerator : MonoBehaviour
         computeShader.SetInt("iterations", planetdata.iterations);
         computeShader.SetFloat("iterationSize", planetdata.iterationSize);
         computeShader.SetFloat("power", planetdata.power);
-        computeShader.SetFloat("Intensity", planetdata.Intensity); 
-        computeShader.SetFloat("OceanNoiseIntensity", planetdata.OceanNoiseIntensity);
+        computeShader.SetFloat("Intensity", planetdata.Intensity);
+
+        computeShader.SetFloat("OceanFreqency", planetdata.OceanFreqency);
+        computeShader.SetInt("OceanIterations", planetdata.OceanIterations);
+        computeShader.SetFloat("OceanIterationSize", planetdata.OceanIterationSize);
+        computeShader.SetFloat("OceanPower", planetdata.OceanPower);
+        computeShader.SetFloat("OceanIntensity", planetdata.OceanIntensity);
+
+        computeShader.SetFloat("valleyDistortion", planetdata.valleyDistortion);
+        computeShader.SetFloat("valleyHight", planetdata.valleyHight);
+        computeShader.SetFloat("valleyPower", planetdata.valleyPower);
 
         computeShader.SetFloat("_BiomNoiseFrequency", planetdata._BiomNoiseFrequency );
         computeShader.SetFloat("_BiomNoiseIntensity", planetdata._BiomNoiseIntensity);

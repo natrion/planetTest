@@ -13,7 +13,16 @@ float iterationSize = 2.0f;
 float power = 2.0f;
 float Intensity = 2.0f;
 int whatSide = 1;
-float OceanNoiseIntensity;
+
+float OceanFreqency = 1.0f;
+int OceanIterations = 5;
+float OceanIterationSize = 2.0f;
+float OceanPower = 2.0f;
+float OceanIntensity = 2.0f;
+
+float valleyHight;
+float valleyDistortion;
+float valleyPower;
 
 float _BiomTransotionNum;
 float _BiomNoiseFrequency;
@@ -109,25 +118,57 @@ float3x3 ComputePerpendicularVectors(float3 originalVector)
     return matrixSpace;
 }
 
-float generateComplexGradientNoise(float3 pos, float frequency, int iterations, float iterationSize, float power, float intensity,float oceanNoiseIntensity) {
+float generateComplexGradientNoise(float3 pos, float frequency, int iterations, float iterationSize, float power, float intensity,float OceanFreqency ,int OceanIterations ,float OceanIterationSize ,float OceanPower ,float OceanIntensity, float valleyHight,float valleyDistortion,float valleyPower) {
 
     float gradientNoiseValue = 0.0;
 
     float mountenrelativeSize = 1.0;
     float mountenrelativeDistortion = 1.0;
 
-    for (int i = 0; i < iterations; i++) {         
-        float gradientNoiseValuePlus = GenerateGradientNoise(pos * frequency * mountenrelativeDistortion) * mountenrelativeSize;
+    for (int i = 0; i < iterations; i++) {       
         
-        gradientNoiseValue += pow(abs( gradientNoiseValuePlus), power);
+        if(i>2) 
+        {
+           float gradientNoiseValuePlus = GenerateGradientNoise(pos * frequency * mountenrelativeDistortion) * mountenrelativeSize;        
+           gradientNoiseValue += pow(abs( gradientNoiseValuePlus), power);
+        }else{
+           float gradientNoiseValuePlus = abs(GenerateGradientNoise(pos * frequency * mountenrelativeDistortion)-0.5F) * mountenrelativeSize*2;        
+           gradientNoiseValue += pow(abs( gradientNoiseValuePlus), power);
+        }
+
 
         mountenrelativeSize /= iterationSize;
         mountenrelativeDistortion *= iterationSize;
     }
     
-    return gradientNoiseValue * intensity *GenerateGradientNoise(pos*oceanNoiseIntensity);
+    float oceanGradientNoiseValue = 0.0;
+    float oceanMaxSize = 0;
+    float oceanRelativeSize = 1.0;
+    float oceanRelativeDistortion = 1.0;
+
+    for (int i = 0; i < iterations; i++) {      
+        
+        float gradientNoiseValuePlus = GenerateGradientNoise(pos * OceanFreqency * oceanRelativeDistortion) * oceanRelativeSize;        
+        oceanGradientNoiseValue += pow(abs( gradientNoiseValuePlus), OceanPower);
+
+        oceanMaxSize +=oceanRelativeSize;
+
+        oceanRelativeSize /= OceanIterationSize;
+        oceanRelativeDistortion *= OceanIterationSize;
+    }
+
+
+    float noise = gradientNoiseValue * intensity * clamp((oceanGradientNoiseValue/oceanMaxSize)*OceanIntensity,0,1);
+
+    if(noise > valleyHight )
+    {
+        float valleyNoise = clamp( pow( GenerateGradientNoise(pos * valleyDistortion ),valleyPower ) , 0.1,1.0);
+        noise =(noise - valleyHight)*valleyNoise + valleyHight ;
+    }
+    return noise;
+    
 }
-float generateComplexBiomGradientNoise(float3 pos, float frequency, int iterations, float iterationSize, float power, float intensity) {
+float generateComplexBiomGradientNoise(float3 pos, float frequency, int iterations, float iterationSize, float power, float intensity ) {
 
     float gradientNoiseValue = 0.0;
 
@@ -149,7 +190,7 @@ float generateComplexBiomGradientNoise(float3 pos, float frequency, int iteratio
 float3 CalculatePosOnPlanet(float3 pos) {
     float3 SpherePosition = normalize(pos) * planetR;
 
-    float gradientNoise = generateComplexGradientNoise(SpherePosition, freqency, iterations, iterationSize, power,Intensity,OceanNoiseIntensity);
+    float gradientNoise = generateComplexGradientNoise(SpherePosition, freqency, iterations, iterationSize, power,Intensity, OceanFreqency ,OceanIterations ,OceanIterationSize, OceanPower ,OceanIntensity, valleyHight, valleyDistortion, valleyPower );
     return SpherePosition * (1 + (gradientNoise / planetR));
 }
 float3x3 GeneratePerpendicularDirections(float3 inputDir)
@@ -170,7 +211,9 @@ float3 CalculateNormalDir(float3 finalPos)
 {
     float3 normalizeDfinalPos = normalize(finalPos);
 
-    float delta = 0.001f; // Small delta for finite differences
+    float tileSize = planeLength / gridSize;
+
+    float delta = 0.1f *tileSize; // Small delta for finite differences
 
     float3x3 NormalPos = GeneratePerpendicularDirections(normalizeDfinalPos);
 
