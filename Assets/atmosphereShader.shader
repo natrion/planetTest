@@ -1,4 +1,4 @@
-Shader "Hidden/Atmosphere"
+﻿Shader "Hidden/Atmosphere"
 {
 	Properties
 	{
@@ -45,7 +45,50 @@ Shader "Hidden/Atmosphere"
 			sampler2D _CameraDepthTexture;
 			float3 _PlanetPos;
 			float _PlanetRadius;
+			float4 _color;
+			float _mul;
+			float _exp;
+		    float CalculateDistanceToTheFarhestVisiblePointOnSphere(float r, float h )
+			{
+				
+				// Calculate the distance using the Pythagorean theorem
+				float distance = sqrt(h * h - r * r);
+				return distance;
+				        
+			}
 
+			float3 GetRaySphereIntersection(float radius, float3 rayDirection, float3 rayPosition)
+			{
+				// Calculate the vector from the origin (sphere center) to the ray's origin
+				float3 originToRay = rayPosition;
+    
+				// Calculate the coefficients of the quadratic equation
+				float a = dot(rayDirection, rayDirection);
+				float b = 2.0 * dot(originToRay, rayDirection);
+				float c = dot(originToRay, originToRay) - radius * radius;
+    
+				// Calculate the discriminant
+				float discriminant = b * b - 4.0 * a * c;
+    
+				// If the discriminant is negative, there is no intersection
+				if (discriminant < 0.0)
+				{
+					return float3(0.0, 0.0, 0.0); // No intersection, return a default value
+				}
+    
+				// Calculate the distance to the intersection point (only the nearest intersection)
+				float sqrtDiscriminant = sqrt(discriminant);
+				float t = (-b - sqrtDiscriminant) / (2.0 * a);
+    
+				// Compute the intersection point
+				float3 intersectionPoint = rayPosition + t * rayDirection;
+    
+				return intersectionPoint;
+			}
+			float NthRoot(float x, float n)
+			{
+				return pow(x, 1.0 / n);
+			}
 			float4 frag (v2f i) : SV_Target
 			{
 				float4 originalCol = tex2D(_MainTex, i.uv);
@@ -57,13 +100,41 @@ Shader "Hidden/Atmosphere"
 				
 				float PlayerPlanetDis = distance(PlayerPos, _PlanetPos);
 				
-				float3 rayMiddleplanetPos = rayDir*PlayerPlanetDis+PlayerPos;
+				float DistanceToTheFarhestVisiblePointOnSphere = CalculateDistanceToTheFarhestVisiblePointOnSphere(_PlanetRadius,PlayerPlanetDis);
+
+				float3 rayMiddleplanetPos = rayDir*DistanceToTheFarhestVisiblePointOnSphere+PlayerPos;
 
 				float rayMiddlePlanetDis = distance(rayMiddleplanetPos,_PlanetPos);
 
-				if(PlayerPlanetDis < _PlanetRadius | rayMiddlePlanetDis<_PlanetRadius)
+				if (PlayerPlanetDis < _PlanetRadius )
 				{
-					return float4(0,0,0,1);
+					float3 PlayerRelativePos = PlayerPos - _PlanetPos;
+
+					float3 startHit = PlayerRelativePos;
+					float3 endhit = GetRaySphereIntersection(_PlanetRadius,rayDir*-1,PlayerRelativePos);
+
+					float3 realEndHit = min(distance(endhit,PlayerPos),sceneDepth) * rayDir + PlayerPos;
+
+					float endStartDis = distance(startHit,realEndHit)/_PlanetRadius;
+					endStartDis = min(NthRoot(endStartDis,_exp)*_mul,1);
+					return  lerp(originalCol,_color, endStartDis);
+
+				}else if(rayMiddlePlanetDis<_PlanetRadius )
+				{
+					float3 startHit = GetRaySphereIntersection(_PlanetRadius,rayDir,rayMiddleplanetPos- _PlanetPos);
+					if(distance(startHit,PlayerPos)> sceneDepth)
+					{
+						return originalCol;
+					}else
+					{
+						float3 endhit = GetRaySphereIntersection(_PlanetRadius,rayDir*-1,rayMiddleplanetPos - _PlanetPos);
+						float3 realEndHit = min(distance(endhit,PlayerPos), sceneDepth) * rayDir + PlayerPos;
+						//float3 test = GetRaySphereIntersection(1,float3(0,0,0),float3(0,0.5,0));
+						float endStartDis = distance(startHit,realEndHit)/_PlanetRadius;
+						endStartDis = min(NthRoot(endStartDis,_exp)*_mul,1);
+						return lerp(originalCol,_color,endStartDis);
+
+					}					
 				}else
 				{
 					return originalCol;
