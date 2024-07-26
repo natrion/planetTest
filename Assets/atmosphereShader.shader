@@ -94,7 +94,7 @@
 			{
 				float endStartDis = distance(hit,exit);
 
-				float whatWaterColor = (endStartDis/_oceanBottom)*1000;
+				float whatWaterColor = min(endStartDis/_oceanBottom,0.5);
 
 				float4 _color = tex2D( _oceanColor  ,float2(whatWaterColor,0) );
 
