@@ -55,14 +55,13 @@ Shader "Bytesized/GrassCustom"
 	#include "Helpers.cginc"
 	
 	struct geometryOutput
-	{
-        float4 color: TEXCOORD2;
-
-		float4 pos : SV_POSITION;		
-		float3 normal : NORMAL;
-		float2 uv : TEXCOORD0;
-		unityShadowCoord4 _ShadowCoord : TEXCOORD1;
-	};
+    {
+        float4 color : TEXCOORD2;
+        float4 pos : SV_POSITION;        
+        float3 normal : NORMAL;
+        float2 uv : TEXCOORD0;
+        unityShadowCoord4 _ShadowCoord : TEXCOORD1;
+    };
 
 	float4 _Biom1MainTex;
     float4 _Biom2MainTex;
@@ -274,15 +273,20 @@ Shader "Bytesized/GrassCustom"
 
     SubShader
     {
-		Cull Off
+		//Cull Off
 
         Pass
         {
 			Tags
 			{
-				"RenderType" = "Opaque"
+				"RenderType" = "Diffuse"
 				"LightMode" = "ForwardBase"
 			}
+
+			// Enable depth writing
+            ZWrite On
+            // Set the depth testing mode
+            ZTest LEqual
 
             CGPROGRAM
             #pragma vertex vert
@@ -299,6 +303,8 @@ Shader "Bytesized/GrassCustom"
 			float4 _BottomColor;
 			float _TranslucentGain;
 
+			
+
 			float4 frag(geometryOutput i,  fixed facing : VFACE) : SV_Target
             {
 				/* Do some lighting on the fragments of the grass blade */	
@@ -308,11 +314,13 @@ Shader "Bytesized/GrassCustom"
 				float3 ambient = ShadeSH9(float4(normal, 1));
 				float4 lightIntensity = NdotL * _LightColor0 + float4(ambient, 1);
 				/* Paint the grass by interpolating between the colors passed as uniforms */
-				return lerp(_BottomColor*  lightIntensity * i.color , _TopColor * lightIntensity * i.color, i.uv.y)*4;
+				float4 finalColor =lerp(_BottomColor*  lightIntensity * i.color , _TopColor * lightIntensity * i.color, i.uv.y)*4;
+				return float4(finalColor.xyz,1);
             }
             ENDCG
         }
 
 		
     }
+	FallBack "Diffuse"
 }

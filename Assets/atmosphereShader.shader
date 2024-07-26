@@ -45,9 +45,10 @@
 			sampler2D _CameraDepthTexture;
 			float3 _PlanetPos;
 			float _PlanetRadius;
-			float4 _color;
 			float _mul;
 			float _exp;
+			sampler2D _oceanColor;
+			float _oceanBottom;
 		    float CalculateDistanceToTheFarhestVisiblePointOnSphere(float r, float h )
 			{
 				
@@ -89,6 +90,18 @@
 			{
 				return pow(x, 1.0 / n);
 			}
+			float4 findOceanColor(float3 hit,float3 exit,float4 originalCol)
+			{
+				float endStartDis = distance(hit,exit);
+
+				float whatWaterColor = (endStartDis/_oceanBottom)*1000;
+
+				float4 _color = tex2D( _oceanColor  ,float2(whatWaterColor,0) );
+
+				endStartDis = min(NthRoot(endStartDis/_PlanetRadius,_exp)*_mul,1);
+				
+				return  lerp(originalCol,_color, endStartDis);
+			}
 			float4 frag (v2f i) : SV_Target
 			{
 				float4 originalCol = tex2D(_MainTex, i.uv);
@@ -106,6 +119,8 @@
 
 				float rayMiddlePlanetDis = distance(rayMiddleplanetPos,_PlanetPos);
 
+				//return float4(sceneDepth/20,sceneDepth/20,sceneDepth/20,1);
+
 				if (PlayerPlanetDis < _PlanetRadius )
 				{
 					float3 PlayerRelativePos = PlayerPos - _PlanetPos;
@@ -115,9 +130,8 @@
 
 					float3 realEndHit = min(distance(endhit,PlayerPos),sceneDepth) * rayDir + PlayerPos;
 
-					float endStartDis = distance(startHit,realEndHit)/_PlanetRadius;
-					endStartDis = min(NthRoot(endStartDis,_exp)*_mul,1);
-					return  lerp(originalCol,_color, endStartDis);
+				
+					return  findOceanColor(startHit, realEndHit,originalCol);
 
 				}else if(rayMiddlePlanetDis<_PlanetRadius )
 				{
@@ -131,8 +145,8 @@
 						float3 realEndHit = min(distance(endhit,PlayerPos), sceneDepth) * rayDir + PlayerPos;
 						//float3 test = GetRaySphereIntersection(1,float3(0,0,0),float3(0,0.5,0));
 						float endStartDis = distance(startHit,realEndHit)/_PlanetRadius;
-						endStartDis = min(NthRoot(endStartDis,_exp)*_mul,1);
-						return lerp(originalCol,_color,endStartDis);
+					
+						return  findOceanColor(startHit, realEndHit,originalCol);
 
 					}					
 				}else
@@ -140,9 +154,10 @@
 					return originalCol;
 				}
 			}
-
+			
 
 			ENDCG
 		}
+		
 	}
 }
