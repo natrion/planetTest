@@ -11,23 +11,44 @@ public class CustomPostProcessing : MonoBehaviour
     public float oceanBottom;
     public Gradient oceanHightColor;
     public Texture2D test;
+    public float frequency;
+    public int iterations;
+    public float iterationSize;
+    public float power;
+    public float Intensity;
     void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
+        
         if (postProcessingMaterial != null) 
         {
             postProcessingMaterial.SetFloat("_PlanetRadius", _PlanetRadius);
             postProcessingMaterial.SetVector("_PlanetPos", _PlanetPos);
             postProcessingMaterial.SetFloat("_mul", mul);
-            postProcessingMaterial.SetFloat("_exp", exp); 
+            postProcessingMaterial.SetFloat("_exp", exp);
             postProcessingMaterial.SetFloat("_oceanBottom", oceanBottom);
             test = GradientToTexture2D(oceanHightColor, 1000, 1);
             postProcessingMaterial.SetTexture("_oceanColor", test);
+
+            Color lightColor = RenderSettings.sun.color;
+            postProcessingMaterial.SetVector("_sunDir", RenderSettings.sun.transform.forward);
+            postProcessingMaterial.SetVector("_sunColor", new Vector4(lightColor.r, lightColor.g, lightColor.b, lightColor.a)); ;
+            postProcessingMaterial.SetFloat("_sunIntensity", RenderSettings.sun.intensity); ;
+            postProcessingMaterial.SetFloat("freqency", frequency);
+            postProcessingMaterial.SetInt("iterations", iterations);
+            postProcessingMaterial.SetFloat("iterationSize", iterationSize);
+            postProcessingMaterial.SetFloat("power", power);
+            postProcessingMaterial.SetFloat("Intensity", Intensity);
             Graphics.Blit(src, dest, postProcessingMaterial);
         }
         else
         {
             Graphics.Blit(src, dest);
         }
+        
+    }
+    private void Start()
+    {
+        
     }
     public static Texture2D GradientToTexture2D(Gradient gradient, int width, int height)
     {
@@ -55,4 +76,5 @@ public class CustomPostProcessing : MonoBehaviour
 
         return texture;
     }
+
 }
