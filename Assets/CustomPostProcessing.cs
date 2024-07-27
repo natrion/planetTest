@@ -16,6 +16,7 @@ public class CustomPostProcessing : MonoBehaviour
     public float iterationSize;
     public float power;
     public float Intensity;
+    public float waveStreanght;
     void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
         
@@ -37,7 +38,8 @@ public class CustomPostProcessing : MonoBehaviour
             postProcessingMaterial.SetInt("iterations", iterations);
             postProcessingMaterial.SetFloat("iterationSize", iterationSize);
             postProcessingMaterial.SetFloat("power", power);
-            postProcessingMaterial.SetFloat("Intensity", Intensity);
+            postProcessingMaterial.SetFloat("Intensity", Intensity); 
+            postProcessingMaterial.SetFloat("_waveStreanght", waveStreanght);
             Graphics.Blit(src, dest, postProcessingMaterial);
         }
         else

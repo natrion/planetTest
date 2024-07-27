@@ -151,7 +151,13 @@
 			float iterationSize = 2.0f;
 			float power = 2.0f;
 			float Intensity = 2.0f;
+			float _waveStreanght;
+			float3 CalculatePosOnPlanet(float3 pos) {
+				float3 SpherePosition = normalize(pos) * _PlanetRadius;
 
+				float gradientNoise =  generateComplexGradientNoise(SpherePosition, freqency, iterations, iterationSize, power,Intensity);
+				return SpherePosition * (1 + (gradientNoise ));
+			}
 			float3x3 GeneratePerpendicularDirections(float3 inputDir)
 			{
 				inputDir = normalize(inputDir);
@@ -166,19 +172,11 @@
 				// Construct the float3x3 matrix
 				return float3x3(perpendicular1, perpendicular2, inputDir);
 			}
-
-			float3 CalculatePosOnWater(float3 pos) {
-				float3 SpherePosition = normalize(pos) ;
-
-				float gradientNoise = generateComplexGradientNoise(pos, freqency, iterations, iterationSize, power,Intensity  );
-				return SpherePosition * (1 + (gradientNoise ));
-			}
-
 			float3 CalculateNormalDir(float3 finalPos)
 			{
 				float3 normalizeDfinalPos = normalize(finalPos);
 
-				float delta = 0.1f ; // Small delta for finite differences
+				float delta = 1.0f ; // Small delta for finite differences
 
 				float3x3 NormalPos = GeneratePerpendicularDirections(normalizeDfinalPos);
 
@@ -186,8 +184,8 @@
 				NormalPos = NormalPos * delta;
 
 				// Calculate positions on the planet
-				float3 worldPos1 = CalculatePosOnWater(NormalPos[0] + finalPos);
-				float3 worldPos2 = CalculatePosOnWater(NormalPos[1] + finalPos);
+				float3 worldPos1 = CalculatePosOnPlanet(NormalPos[0] + finalPos / _PlanetRadius);
+				float3 worldPos2 = CalculatePosOnPlanet(NormalPos[1] + finalPos/ _PlanetRadius);
 
 				float3 direction1 = worldPos1 - finalPos;
 				float3 direction2 = worldPos2 - finalPos;
@@ -196,7 +194,8 @@
 				float3 normal = cross(normalize(direction1),normalize( direction2));
 
 				// Return the normalized normal vector
-				return normalize( normal);
+
+				return lerp(normalize(finalPos),normal,_waveStreanght);
 			}
 
 			float4 findOceanColor(float3 hit,float3 exit,float4 originalCol,bool inWater)
@@ -212,20 +211,20 @@
                 float3 lightDir = normalize(_sunDir.xyz);
 
 				float3 normalDir ;
-				float test =generateComplexGradientNoise(hit, freqency, iterations, iterationSize, power,Intensity  );
+				//float test =generateComplexGradientNoise(hit, freqency, iterations, iterationSize, power,Intensity  );
 				if(inWater == true)
 				{
-					 normalDir = normalize(exit);
+					 normalDir = CalculateNormalDir(exit);
 				}else{
-					 normalDir = normalize(hit);
+					 normalDir = CalculateNormalDir(hit);
 				}
 				
 				float pointShine = dot(normalDir,lightDir*-1)*0.5+0.5;
 
-				pointShine *=0.5;
-				float sunIntensityModifi = NthRoot( _sunIntensity ,2);
+				//pointShine *=0.5;
+				float sunIntensityModifi = NthRoot( _sunIntensity ,2)/2;
 				_color = lerp(float4(0,0,0,1), float4(_color.x+pointShine*sunIntensityModifi*_sunColor.x,_color.y+pointShine*sunIntensityModifi*_sunColor.y,_color.z+pointShine*sunIntensityModifi*_sunColor.z,1),pointShine*sunIntensityModifi );
-				return float4(test,test,test,1);//lerp(originalCol,_color, endStartDis);
+				return lerp(originalCol,_color, endStartDis);//float4(test,test,test,1);//lerp(originalCol,_color, endStartDis);
 			}
 			float4 frag (v2f i) : SV_Target
 			{
