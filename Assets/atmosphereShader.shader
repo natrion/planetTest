@@ -98,7 +98,7 @@
 			sampler2D _MainTex;
 			sampler2D _CameraDepthTexture;
 			float3 _PlanetPos;
-			float _PlanetRadius;
+			float _WaterRadius;
 			float _mul;
 			float _exp;
 			sampler2D _oceanColor;
@@ -156,9 +156,10 @@
 			float _waveStreanght;
 			float _atmosphereSize;
 			float _atmosphereDensity;
+			float4 _atmosphereColor;
 
 			float3 CalculatePosOnPlanet(float3 pos) {
-				float3 SpherePosition = normalize(pos) * _PlanetRadius;
+				float3 SpherePosition = normalize(pos) * _WaterRadius;
 
 				float gradientNoise =  generateComplexGradientNoise(SpherePosition, freqency, iterations, iterationSize, power,Intensity);
 				return SpherePosition * (1 + (gradientNoise ));
@@ -190,8 +191,8 @@
 				NormalPos = NormalPos * delta;
 
 				// Calculate positions on the planet
-				float3 worldPos1 = CalculatePosOnPlanet(NormalPos[0] + finalPos / _PlanetRadius);
-				float3 worldPos2 = CalculatePosOnPlanet(NormalPos[1] + finalPos/ _PlanetRadius);
+				float3 worldPos1 = CalculatePosOnPlanet(NormalPos[0] + finalPos / _WaterRadius);
+				float3 worldPos2 = CalculatePosOnPlanet(NormalPos[1] + finalPos/ _WaterRadius);
 
 				float3 direction1 = worldPos1 - finalPos;
 				float3 direction2 = worldPos2 - finalPos;
@@ -204,9 +205,11 @@
 				return lerp(normalize(finalPos),normal,_waveStreanght);
 			}
 
-			float4 findAtmosphereColor(float3 hit,float3 exit,float4 originalCol,bool inAtmosphere, float atmosphereR)
+			float4 findAtmosphereColor(float3 hit,float3 exit,float4 originalCol,bool inAtmosphere)
 			{
-				return originalCol + float4(0.1,0.1,0.1,0);
+				float endStartDis = distance(hit,exit);
+
+				return originalCol +((endStartDis * _atmosphereColor )/_atmosphereSize)* _atmosphereDensity;
 			}
 
 			float4 findOceanColor(float3 hit,float3 exit,float4 originalCol,bool inWater)
@@ -217,7 +220,7 @@
 
 				float4 _color = tex2D( _oceanColor  ,float2(whatWaterColor,0) );
 
-				endStartDis = min(NthRoot(endStartDis/_PlanetRadius,_exp)*_mul,1);
+				endStartDis = min(NthRoot(endStartDis/_WaterRadius,_exp)*_mul,1);
 
                 float3 lightDir = normalize(_sunDir.xyz);
 
@@ -245,13 +248,13 @@
 				bool interacted;
 				bool inWater;
 			};
-			getHit1Hit2onSphereOutput getHit1Hit2onSphere(float3 _PlanetPos,float3 PlayerPos ,float3 rayDir ,float _PlanetRadius,float sceneDepth)
+			getHit1Hit2onSphereOutput getHit1Hit2onSphere(float3 _PlanetPos,float3 PlayerPos ,float3 rayDir ,float _WaterRadius,float sceneDepth)
 			{
 				getHit1Hit2onSphereOutput result ;
 
 				float PlayerPlanetDis = distance(PlayerPos, _PlanetPos);
 				
-				float DistanceToTheFarhestVisiblePointOnSphere = CalculateDistanceToTheFarhestVisiblePointOnSphere(_PlanetRadius,PlayerPlanetDis);
+				float DistanceToTheFarhestVisiblePointOnSphere = CalculateDistanceToTheFarhestVisiblePointOnSphere(_WaterRadius,PlayerPlanetDis);
 
 				float3 rayMiddleplanetPos = rayDir*DistanceToTheFarhestVisiblePointOnSphere+PlayerPos;
 
@@ -259,13 +262,13 @@
 
 				//return float4(sceneDepth/20,sceneDepth/20,sceneDepth/20,1);
 
-				if (PlayerPlanetDis < _PlanetRadius )
+				if (PlayerPlanetDis < _WaterRadius )
 				{
 					
 					float3 PlayerRelativePos = PlayerPos - _PlanetPos;
 
 					result.enter = PlayerRelativePos;
-					float3 endhit = GetRaySphereIntersection(_PlanetRadius,rayDir*-1,PlayerRelativePos);
+					float3 endhit = GetRaySphereIntersection(_WaterRadius,rayDir*-1,PlayerRelativePos);
 
 					result.stop = min(distance(endhit,PlayerPos),sceneDepth) * rayDir + PlayerPos;
 					result.interacted = true;
@@ -273,10 +276,10 @@
 				
 					return result;
 
-				}else if(rayMiddlePlanetDis<_PlanetRadius )
+				}else if(rayMiddlePlanetDis<_WaterRadius )
 				{
 					result.inWater = false;
-					float3 startHit = GetRaySphereIntersection(_PlanetRadius,rayDir,rayMiddleplanetPos- _PlanetPos);
+					float3 startHit = GetRaySphereIntersection(_WaterRadius,rayDir,rayMiddleplanetPos- _PlanetPos);
 					
 
 					if(distance(startHit,PlayerPos)> sceneDepth)
@@ -287,7 +290,7 @@
 					{
 						result.interacted = true;
 						result.enter = startHit;
-						float3 endhit = GetRaySphereIntersection(_PlanetRadius,rayDir*-1,rayMiddleplanetPos - _PlanetPos);
+						float3 endhit = GetRaySphereIntersection(_WaterRadius,rayDir*-1,rayMiddleplanetPos - _PlanetPos);
 						result.stop= min(distance(endhit,PlayerPos), sceneDepth) * rayDir + PlayerPos;
 						//float3 test = GetRaySphereIntersection(1,float3(0,0,0),float3(0,0.5,0));
 					
@@ -311,7 +314,12 @@
 				float3 rayDir = normalize(i.viewVector);
 				
 				getHit1Hit2onSphereOutput atmosphereHitsInf = getHit1Hit2onSphere( _PlanetPos, PlayerPos , rayDir , _atmosphereSize, sceneDepth);
-				getHit1Hit2onSphereOutput waterHitsInf = getHit1Hit2onSphere( _PlanetPos, PlayerPos , rayDir , _PlanetRadius, sceneDepth);
+				getHit1Hit2onSphereOutput waterHitsInf = getHit1Hit2onSphere( _PlanetPos, PlayerPos , rayDir , _WaterRadius, sceneDepth);
+
+				if(waterHitsInf.interacted == true)
+				{
+					originalCol = findOceanColor(waterHitsInf.enter, waterHitsInf.stop,originalCol,waterHitsInf.inWater);
+				} 
 
 				if(atmosphereHitsInf.interacted == true  )
 				{
@@ -319,16 +327,12 @@
 					{
 						if(waterHitsInf.inWater == true)
 						{
-							originalCol = findOceanColor(waterHitsInf.stop, atmosphereHitsInf.stop,originalCol,atmosphereHitsInf.inWater);
-						}else originalCol = findOceanColor(atmosphereHitsInf.enter, waterHitsInf.enter,originalCol,atmosphereHitsInf.inWater);
+							originalCol = findAtmosphereColor(waterHitsInf.stop, atmosphereHitsInf.stop,originalCol,atmosphereHitsInf.inWater);
+						}else originalCol = findAtmosphereColor(atmosphereHitsInf.enter, waterHitsInf.enter,originalCol,atmosphereHitsInf.inWater);
 
-					}else originalCol = findOceanColor(atmosphereHitsInf.enter, atmosphereHitsInf.stop,originalCol,atmosphereHitsInf.inWater);					
+					}else originalCol = findAtmosphereColor(atmosphereHitsInf.enter, atmosphereHitsInf.stop,originalCol,atmosphereHitsInf.inWater);					
 				} 
-
-				if(waterHitsInf.interacted == true)
-				{
-					originalCol = findOceanColor(waterHitsInf.enter, waterHitsInf.stop,originalCol,waterHitsInf.inWater);
-				} 
+				
 							
 				return originalCol; 
 			}

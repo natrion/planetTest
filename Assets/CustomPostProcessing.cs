@@ -5,7 +5,7 @@ public class CustomPostProcessing : MonoBehaviour
 {
     public Material postProcessingMaterial;
     public Vector3 _PlanetPos;
-    public float _PlanetRadius;
+    public float waterRadius;
     public float mul;
     public float exp;
     public float oceanBottom;
@@ -19,12 +19,13 @@ public class CustomPostProcessing : MonoBehaviour
     public float waveStreanght;
     public float atmosphereSize;
     public float atmosphereDensity;
+    public Color atmosphereColor;
     void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
         
         if (postProcessingMaterial != null) 
         {
-            postProcessingMaterial.SetFloat("_PlanetRadius", _PlanetRadius);
+            postProcessingMaterial.SetFloat("_WaterRadius", waterRadius);
             postProcessingMaterial.SetVector("_PlanetPos", _PlanetPos);
             postProcessingMaterial.SetFloat("_mul", mul);
             postProcessingMaterial.SetFloat("_exp", exp);
@@ -34,8 +35,8 @@ public class CustomPostProcessing : MonoBehaviour
 
             Color lightColor = RenderSettings.sun.color;
             postProcessingMaterial.SetVector("_sunDir", RenderSettings.sun.transform.forward);
-            postProcessingMaterial.SetVector("_sunColor", new Vector4(lightColor.r, lightColor.g, lightColor.b, lightColor.a)); ;
-            postProcessingMaterial.SetFloat("_sunIntensity", RenderSettings.sun.intensity); ;
+            postProcessingMaterial.SetVector("_sunColor", new Vector4(lightColor.r, lightColor.g, lightColor.b, lightColor.a)); 
+            postProcessingMaterial.SetFloat("_sunIntensity", RenderSettings.sun.intensity); 
             postProcessingMaterial.SetFloat("freqency", frequency);
             postProcessingMaterial.SetInt("iterations", iterations);
             postProcessingMaterial.SetFloat("iterationSize", iterationSize);
@@ -44,6 +45,7 @@ public class CustomPostProcessing : MonoBehaviour
             postProcessingMaterial.SetFloat("_waveStreanght", waveStreanght);
             postProcessingMaterial.SetFloat("_atmosphereSize", atmosphereSize);
             postProcessingMaterial.SetFloat("_atmosphereDensity", atmosphereDensity);
+            postProcessingMaterial.SetVector("_atmosphereColor", new Vector4(atmosphereColor.r, atmosphereColor.g, atmosphereColor.b, atmosphereColor.a) );
             Graphics.Blit(src, dest, postProcessingMaterial);
         }
         else

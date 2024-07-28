@@ -298,13 +298,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0.6976653, z: 0, w: -0.71642387}
+  m_LocalRotation: {x: 0, y: 0.51091826, z: -0, w: -0.85962933}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 448.48, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 298.55, z: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -412,7 +412,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   postProcessingMaterial: {fileID: 2100000, guid: 9b6b9ec7e9e2cf8458df4f23bc039dcc, type: 2}
   _PlanetPos: {x: 0, y: 0, z: 0}
-  _PlanetRadius: 2600
+  waterRadius: 2600
   mul: 9
   exp: 3
   oceanBottom: 80
@@ -446,15 +446,16 @@ MonoBehaviour:
     m_ColorSpace: -1
     m_NumColorKeys: 3
     m_NumAlphaKeys: 2
-  test: {fileID: 1529375520}
+  test: {fileID: 2113261621}
   frequency: 0.005
   iterations: 6
   iterationSize: 2
   power: 1
   Intensity: 0.5
   waveStreanght: 1
-  atmosphereSize: 2880.07
-  atmosphereDensity: 0
+  atmosphereSize: 3103
+  atmosphereDensity: 0.46
+  atmosphereColor: {r: 1, g: 1, b: 1, a: 0}
 --- !u!1 &1052627999
 GameObject:
   m_ObjectHideFlags: 0
@@ -760,7 +761,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!28 &1529375520
+--- !u!28 &2113261621
 Texture2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
