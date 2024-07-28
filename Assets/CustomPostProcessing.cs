@@ -17,6 +17,8 @@ public class CustomPostProcessing : MonoBehaviour
     public float power;
     public float Intensity;
     public float waveStreanght;
+    public float atmosphereSize;
+    public float atmosphereDensity;
     void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
         
@@ -40,6 +42,8 @@ public class CustomPostProcessing : MonoBehaviour
             postProcessingMaterial.SetFloat("power", power);
             postProcessingMaterial.SetFloat("Intensity", Intensity); 
             postProcessingMaterial.SetFloat("_waveStreanght", waveStreanght);
+            postProcessingMaterial.SetFloat("_atmosphereSize", atmosphereSize);
+            postProcessingMaterial.SetFloat("_atmosphereDensity", atmosphereDensity);
             Graphics.Blit(src, dest, postProcessingMaterial);
         }
         else

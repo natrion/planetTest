@@ -12,6 +12,8 @@
 		Pass
 		{
 			CGPROGRAM
+// Upgrade NOTE: excluded shader from OpenGL ES 2.0 because it uses non-square matrices
+#pragma exclude_renderers gles
 			#pragma vertex vert
 			#pragma fragment frag
 
@@ -152,6 +154,9 @@
 			float power = 2.0f;
 			float Intensity = 2.0f;
 			float _waveStreanght;
+			float _atmosphereSize;
+			float _atmosphereDensity;
+
 			float3 CalculatePosOnPlanet(float3 pos) {
 				float3 SpherePosition = normalize(pos) * _PlanetRadius;
 
@@ -172,6 +177,7 @@
 				// Construct the float3x3 matrix
 				return float3x3(perpendicular1, perpendicular2, inputDir);
 			}
+
 			float3 CalculateNormalDir(float3 finalPos)
 			{
 				float3 normalizeDfinalPos = normalize(finalPos);
@@ -196,6 +202,11 @@
 				// Return the normalized normal vector
 
 				return lerp(normalize(finalPos),normal,_waveStreanght);
+			}
+
+			float4 findAtmosphereColor(float3 hit,float3 exit,float4 originalCol,bool inAtmosphere, float atmosphereR)
+			{
+				return originalCol + float4(0.1,0.1,0.1,0);
 			}
 
 			float4 findOceanColor(float3 hit,float3 exit,float4 originalCol,bool inWater)
@@ -226,15 +237,18 @@
 				_color = lerp(float4(0,0,0,1), float4(_color.x+pointShine*sunIntensityModifi*_sunColor.x,_color.y+pointShine*sunIntensityModifi*_sunColor.y,_color.z+pointShine*sunIntensityModifi*_sunColor.z,1),pointShine*sunIntensityModifi );
 				return lerp(originalCol,_color, endStartDis);//float4(test,test,test,1);//lerp(originalCol,_color, endStartDis);
 			}
-			float4 frag (v2f i) : SV_Target
+
+			struct getHit1Hit2onSphereOutput
 			{
-				float4 originalCol = tex2D(_MainTex, i.uv);
-				float sceneDepthNonLinear = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv);
-				float sceneDepth = LinearEyeDepth(sceneDepthNonLinear) * length(i.viewVector);
-											
-				float3 PlayerPos = _WorldSpaceCameraPos;
-				float3 rayDir = normalize(i.viewVector);
-				
+				float3 enter;
+				float3 stop;
+				bool interacted;
+				bool inWater;
+			};
+			getHit1Hit2onSphereOutput getHit1Hit2onSphere(float3 _PlanetPos,float3 PlayerPos ,float3 rayDir ,float _PlanetRadius,float sceneDepth)
+			{
+				getHit1Hit2onSphereOutput result ;
+
 				float PlayerPlanetDis = distance(PlayerPos, _PlanetPos);
 				
 				float DistanceToTheFarhestVisiblePointOnSphere = CalculateDistanceToTheFarhestVisiblePointOnSphere(_PlanetRadius,PlayerPlanetDis);
@@ -247,37 +261,78 @@
 
 				if (PlayerPlanetDis < _PlanetRadius )
 				{
+					
 					float3 PlayerRelativePos = PlayerPos - _PlanetPos;
 
-					float3 startHit = PlayerRelativePos;
+					result.enter = PlayerRelativePos;
 					float3 endhit = GetRaySphereIntersection(_PlanetRadius,rayDir*-1,PlayerRelativePos);
 
-					float3 realEndHit = min(distance(endhit,PlayerPos),sceneDepth) * rayDir + PlayerPos;
-
+					result.stop = min(distance(endhit,PlayerPos),sceneDepth) * rayDir + PlayerPos;
+					result.interacted = true;
+					result.inWater= true;
 				
-					return  findOceanColor(startHit, realEndHit,originalCol,true);
+					return result;
 
 				}else if(rayMiddlePlanetDis<_PlanetRadius )
 				{
+					result.inWater = false;
 					float3 startHit = GetRaySphereIntersection(_PlanetRadius,rayDir,rayMiddleplanetPos- _PlanetPos);
+					
+
 					if(distance(startHit,PlayerPos)> sceneDepth)
 					{
-						return originalCol;
+						result.interacted = false;
+						return result;
 					}else
 					{
+						result.interacted = true;
+						result.enter = startHit;
 						float3 endhit = GetRaySphereIntersection(_PlanetRadius,rayDir*-1,rayMiddleplanetPos - _PlanetPos);
-						float3 realEndHit = min(distance(endhit,PlayerPos), sceneDepth) * rayDir + PlayerPos;
+						result.stop= min(distance(endhit,PlayerPos), sceneDepth) * rayDir + PlayerPos;
 						//float3 test = GetRaySphereIntersection(1,float3(0,0,0),float3(0,0.5,0));
-						float endStartDis = distance(startHit,realEndHit)/_PlanetRadius;
 					
-						return  findOceanColor(startHit, realEndHit,originalCol,false);
+						return result;
 
 					}					
 				}else
 				{
-					return originalCol;
+					result.interacted = false;
+					return result;
 				}
 			}
+
+			float4 frag (v2f i) : SV_Target
+			{
+				float4 originalCol = tex2D(_MainTex, i.uv);
+				float sceneDepthNonLinear = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv);
+				float sceneDepth = LinearEyeDepth(sceneDepthNonLinear) * length(i.viewVector);
+											
+				float3 PlayerPos = _WorldSpaceCameraPos;
+				float3 rayDir = normalize(i.viewVector);
+				
+				getHit1Hit2onSphereOutput atmosphereHitsInf = getHit1Hit2onSphere( _PlanetPos, PlayerPos , rayDir , _atmosphereSize, sceneDepth);
+				getHit1Hit2onSphereOutput waterHitsInf = getHit1Hit2onSphere( _PlanetPos, PlayerPos , rayDir , _PlanetRadius, sceneDepth);
+
+				if(atmosphereHitsInf.interacted == true  )
+				{
+					if(waterHitsInf.interacted == true)
+					{
+						if(waterHitsInf.inWater == true)
+						{
+							originalCol = findOceanColor(waterHitsInf.stop, atmosphereHitsInf.stop,originalCol,atmosphereHitsInf.inWater);
+						}else originalCol = findOceanColor(atmosphereHitsInf.enter, waterHitsInf.enter,originalCol,atmosphereHitsInf.inWater);
+
+					}else originalCol = findOceanColor(atmosphereHitsInf.enter, atmosphereHitsInf.stop,originalCol,atmosphereHitsInf.inWater);					
+				} 
+
+				if(waterHitsInf.interacted == true)
+				{
+					originalCol = findOceanColor(waterHitsInf.enter, waterHitsInf.stop,originalCol,waterHitsInf.inWater);
+				} 
+							
+				return originalCol; 
+			}
+
 			
 
 			ENDCG
