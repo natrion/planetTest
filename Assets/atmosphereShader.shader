@@ -158,6 +158,22 @@
 			float _atmosphereDensity;
 			float4 _atmosphereColor;
 
+			float _atmosphericFallof;
+			float _cloudsStepSize;
+			float _cloudsFreqency = 1.0f;
+			int _cloudsIterations = 5;
+			float _cloudsIterationSize = 2.0f;
+			float _cloudsPower = 2.0f;
+			float _cloudsIntensity = 2.0f;
+
+			float _cloudsTopFreqency = 1.0f;
+			int _cloudsTopIterations = 5;
+			float _cloudsTopIterationSize = 2.0f;
+			float _cloudsTopPower = 2.0f;
+			float _cloudsHight = 2.0f;
+
+			float4 _cloudColor;
+
 			float3 CalculatePosOnPlanet(float3 pos) {
 				float3 SpherePosition = normalize(pos) * _WaterRadius;
 
@@ -204,14 +220,65 @@
 
 				return lerp(normalize(finalPos),normal,_waveStreanght);
 			}
+			float AverageExpValue(float dist1, float dist2) {
+				// Ensure dist1 and dist2 are within the range [0, 1]
+				dist1 = clamp(dist1, 0.0, 1.0);
+				dist2 = clamp(dist2, 0.0, 1.0);
+
+				// Swap dist1 and dist2 if they are out of order
+				if (dist1 > dist2) {
+					float temp = dist1;
+					dist1 = dist2;
+					dist2 = temp;
+				}
+
+				// Calculate the integral of 1/x from dist1 to dist2
+				float integralDist1 = log(dist1);
+				float integralDist2 = log(dist2);
+
+				// Calculate the average value
+				float average = (integralDist2 - integralDist1) / (dist2 - dist1);
+
+				return average;
+			}
 
 			float4 findAtmosphereColor(float3 hit,float3 exit,float4 originalCol,bool inAtmosphere)
 			{
+				//float atmosphereSize = _atmosphereSize ;
+				//float hightFromSeeLevel0to1 = (( distance(lerp(hit,exit,0.5),_PlanetPos) - _WaterRadius+_atmosphericFallof) )/(atmosphereSize - _WaterRadius+_atmosphericFallof);
+				//float avarageDesnsity = 1/(max(hightFromSeeLevel0to1,0.01));
+				float3 midlePoint = lerp(hit,exit,0.5);
+				float3 distances = float3((  distance(hit,_PlanetPos)-_WaterRadius) / (_atmosphereSize-_WaterRadius),(distance(midlePoint,_PlanetPos)-_WaterRadius) / (_atmosphereSize-_WaterRadius),( distance(exit,_PlanetPos)-_WaterRadius) / (_atmosphereSize-_WaterRadius));
+			    distances = clamp(distances + float3(0.01,0.01,0.01),float3(0.001,0.001,0.001),float3(1,1,1));
+				float avrg1 = AverageExpValue(distances.x,distances.y);
+				float avrg2 = AverageExpValue(distances.y,distances.z);
+				float avrgDensity = (avrg1 + avrg2)/2;
+				avrgDensity = pow(avrgDensity, _atmosphericFallof);
+				
 				float endStartDis = distance(hit,exit);
+				
+				float cloudValue = 0;
+				float distanceTraveld = 0;
+				int maxTestSteps = 100;
+				int steps = 0;
+				while(endStartDis > distanceTraveld & maxTestSteps>steps)
+				{										
+					float3 pos = lerp(hit,exit,distanceTraveld/endStartDis);
 
-				return originalCol +((endStartDis * _atmosphereColor )/_atmosphereSize)* _atmosphereDensity;
+					cloudValue += generateComplexGradientNoise(pos, _cloudsFreqency, _cloudsIterations, _cloudsIterationSize, _cloudsPower,_cloudsIntensity);
+
+					float hight =distance(pos, _PlanetPos)-_WaterRadius;
+					distanceTraveld += _cloudsStepSize* 1 / min(abs( hight- _cloudsHight),1);
+					steps++;
+				}
+
+				float mul  = endStartDis *avrgDensity* _atmosphereDensity;
+
+				float4 cloudsPlusColor = _cloudColor * cloudValue;
+
+				mul = max(mul,0);
+				return lerp(originalCol , _atmosphereColor,mul)  + cloudsPlusColor ;//*avarageDesnsity;
 			}
-
 			float4 findOceanColor(float3 hit,float3 exit,float4 originalCol,bool inWater)
 			{
 				float endStartDis = distance(hit,exit);
