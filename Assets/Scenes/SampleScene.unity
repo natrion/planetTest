@@ -342,7 +342,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.2188679, g: 0.2188679, b: 0.2188679, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -446,7 +446,7 @@ MonoBehaviour:
     m_ColorSpace: -1
     m_NumColorKeys: 3
     m_NumAlphaKeys: 2
-  test: {fileID: 1819780390}
+  test: {fileID: 2051042688}
   frequency: 0.005
   iterations: 6
   iterationSize: 2
@@ -454,15 +454,19 @@ MonoBehaviour:
   Intensity: 0.5
   waveStreanght: 1
   atmosphereSize: 4196
-  atmosphereDensity: 0.000005
-  atmosphereColor: {r: 1, g: 0.9408826, b: 0, a: 0}
-  atmosphericFallof: 1.4
+  atmosphereDensity: 0.000009
+  atmosphereColor: {r: 0.35372016, g: 0.47498533, b: 0.6943395, a: 0}
+  atmosphericFallof: 1.84
   cloudsStepSize: 50
-  cloudsFreqency: 0.01
-  cloudsIterations: 1
-  cloudsIterationSize: 1
+  cloudsFreqency: 0.005
+  cloudsIterations: 3
+  cloudsIterationSize: 1.5
   cloudsPower: 1
-  cloudsIntensity: 0.03
+  cloudsIntensity: 0.04
+  cloudsHight: 169.1
+  cloudsLayerWith: 100
+  cloudsLayerCentreConcetaration: 1.26
+  cloudColor: {r: 1, g: 1, b: 1, a: 0}
 --- !u!1 &1052627999
 GameObject:
   m_ObjectHideFlags: 0
@@ -768,7 +772,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!28 &1819780390
+--- !u!28 &2051042688
 Texture2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
