@@ -26,36 +26,46 @@ public class PlanetGenerator : MonoBehaviour
    // [SerializeField] private  Mesh grassMeshNonStatic;
 
     public static GameObject player;
-
+    [SerializeField] private Shader nonStaticGroundShader;
+    public static Shader groundShader;
+    [SerializeField] private Shader nonStaticGrassShader;
+    public static Shader GrassShader;
     [SerializeField] private Material planeMaterialNostatic;
     [SerializeField] private ComputeShader computeShaderNostatic;
     [SerializeField] private GameObject playerNostatic;
-
+    [SerializeField] private Shader nonStatic_waterAtmosphereShaders;
+    public static Shader waterAtmosphereShaders;
     private static int[] indicesFront;
     private static int[] indicesBack;
     [SerializeField] private int vertextSideCountNostatic;
     public static int vertextSideCount;
 
-  //  [SerializeField] private int grassSideCountNonStatic;
-  //  public static int grassSideCount;
-
+    //  [SerializeField] private int grassSideCountNonStatic;
+    //  public static int grassSideCount;
     void Start()
     {     
         StartImporantvariables();
 
-        new Planet(onePlanetData);
+        Planet planet1 = new Planet(onePlanetData);
+        planet1.planetData.planetGameObject.transform.position = new Vector3(0, -10000, 0);
+
+        Planet planet2 = new Planet(onePlanetData);
+        planet2.planetData.planetGameObject.transform.position = new Vector3(0,10000,0);
     }
     
     public void StartImporantvariables()
     {
-       // grassIterations = grassIterationsNonStatic;
+        atmosphereShader = atmosphereShaderNonStatic;
+        waterShader= waterShaderNonStatic;
+        sphere = sphereNonStatic;
+        GrassShader = nonStaticGrassShader;
+        groundShader = nonStaticGroundShader;
+        // grassIterations = grassIterationsNonStatic;
         teststatic = test;
         // GrassDis = GrassDisNonStatic;
         // grassComputeShader = grassComputeShaderNonStatic;
         // grassMaterial = grassMaterialNonStatic;
         //  grassMesh = grassMeshNonStatic;
-
-        grassMaterial = grassMaterialNonStatic;
         
         MinChunkSize = MinChunkSizeNonStatic;
         player = playerNostatic;
@@ -68,9 +78,9 @@ public class PlanetGenerator : MonoBehaviour
 
         chunkInChunkSideNum = chunkInChunkSideNostatic;
 
-       // grassSideCountNonStatic =  Mathf.CeilToInt((float)grassSideCountNonStatic / 4) * 4;
-       // grassSideCount = grassSideCountNonStatic;
-
+        // grassSideCountNonStatic =  Mathf.CeilToInt((float)grassSideCountNonStatic / 4) * 4;
+        // grassSideCount = grassSideCountNonStatic;
+        waterAtmosphereShaders = nonStatic_waterAtmosphereShaders;
         GenerateIndices();
     }
     void GenerateIndices()
@@ -144,8 +154,6 @@ public class PlanetGenerator : MonoBehaviour
     //private static List<Chunk> chunksWithGPUinstancedata = new List<Chunk>();
 
     // private static List<GPUinstanceData> grasstoDraw = new List<GPUinstanceData>();
-    [SerializeField] private Material grassMaterialNonStatic;
-    public static Material grassMaterial;
 
     [SerializeField] GameObject test;
     public static GameObject teststatic;
@@ -209,7 +217,7 @@ public class PlanetGenerator : MonoBehaviour
         
         public async Task loadChunks(PlanetData planet)
         {
-            float chunkPlayerDistance = Vector3.Distance(chunkWorldPos, player.transform.position);
+            float chunkPlayerDistance = Vector3.Distance(chunkWorldPos + planet.planetGameObject.transform.position, player.transform.position);
 
             float PlayerPlanetHight = Vector3.Distance(player.transform.position, planet.planetGameObject.transform.position);
 
@@ -422,7 +430,6 @@ public class PlanetGenerator : MonoBehaviour
     [SerializeField] private float chunkGeneratingDistanceNostatic;
 
     [SerializeField] private int chunkInChunkSideNostatic;
-
     public struct objectInfo
     {
         public Vector3 pos;
@@ -464,13 +471,97 @@ public class PlanetGenerator : MonoBehaviour
         public float valleyDistortion; 
         public float valleyPower;
 
+        //atmosphere and water parameters
+
+        public Material postProcessingMaterial;
+        public float waterRadius;
+        public float oceanMul;
+        public float oceanExp;
+        public float oceanBottom;
+        public Gradient oceanHightColor;
+        public Texture2D oceanHightColorImage;
+        public float WaterBlackSpotsFrequency;
+        public int WaterBlackSpotsIterations;
+        public float WaterBlackSpotsIterationSize;
+        public float WaterBlackSpotsPower;
+        public float WaterBlackSpotsIntensity;
+        public float waveStreanght;
+        public float atmosphereSize;
+        public float atmosphereDensity;
+        public Color atmosphereColor;
+        public float atmosphericFallof;
+
+        public float cloudsStepSize;
+        public float cloudsFreqency ;
+        public int cloudsIterations;
+        public float cloudsIterationSize ;
+        public float cloudsPower;
+        public float cloudsIntensity ;
+
+        public float cloudsHight ;
+        public float cloudsLayerWith;
+        public float cloudsLayerCentreConcetaration;
+        public Color cloudColor;
+
+        // ground material informations
+
+        public Material groundMaterial;
+        public float _Glossiness;
+        public float _Metallic;
+
+        public float _NoiseFrequency;
+        public int _NoiseIterations;
+        public float _NoiseIterationSize;
+        public float _NoisePower;
+        public float _NoiseIntensity;
+
+        public Texture2D _Biom1MainTex;
+        public Texture2D _Biom1NormalMap;
+        public Texture2D _Biom1CliffMainTex;
+        public Texture2D _Biom1CliffNormalMap;
+        public Texture2D _Biom2MainTex;
+        public Texture2D _Biom2NormalMap;
+        public Texture2D _Biom2CliffMainTex;
+        public Texture2D _Biom2CliffNormalMap;
+
+        public float _TileSize;
+        public float _transitionNum;
+        public float _CliffSize;
+
         public float _BiomTransotionNum;
         public float _BiomNoiseFrequency;
         public float _BiomNoiseIterations;
         public float _BiomNoiseIterationSize;
         public float _BiomNoisePower;
         public float _BiomNoiseIntensity;
+        //grass
+        public Material grassMaterial;
+
+        public Color TopColor;
+        public Color BottomColor;
+        public float WindStrength;
+
+        
+        public float BladeWidth;
+        public float BladeHeight;
+
+        public float BladeCurve;
+        public Color Biom1MainTex;
+        public Color Biom2MainTex;
+
+        public float BladeStiffnes;
+
+        public GameObject atmosphere;
+        public GameObject ocean;
     }
+    private static Mesh sphere;
+    [SerializeField] private  Mesh sphereNonStatic;
+
+    private static Shader atmosphereShader;
+    [SerializeField] private Shader atmosphereShaderNonStatic;
+
+    private static Material waterShader;
+    [SerializeField] private Material waterShaderNonStatic;
 
     [System.Serializable]
     public class Planet 
@@ -483,12 +574,82 @@ public class PlanetGenerator : MonoBehaviour
         }
         public async Task CreatePlanet(PlanetData planetData)
         {
-            
+            //making chunks
             this.planetData = planetData;
 
             this.planetData.planetGameObject = new GameObject("planet");
 
             this.chunks = new List<Chunk>();
+
+            this.planetData.groundMaterial = new Material(groundShader);
+
+            // Set float properties
+            this.planetData.groundMaterial.SetFloat("_Glossiness", this.planetData._Glossiness);
+            this.planetData.groundMaterial.SetFloat("_Metallic", this.planetData._Metallic);
+            this.planetData.groundMaterial.SetFloat("_NoiseFrequency", this.planetData._NoiseFrequency);
+            this.planetData.groundMaterial.SetFloat("_NoiseIterations", this.planetData._NoiseIterations);
+            this.planetData.groundMaterial.SetFloat("_NoiseIterationSize", this.planetData._NoiseIterationSize);
+            this.planetData.groundMaterial.SetFloat("_NoisePower", this.planetData._NoisePower);
+            this.planetData.groundMaterial.SetFloat("_NoiseIntensity", this.planetData._NoiseIntensity);
+            this.planetData.groundMaterial.SetFloat("_BiomTransotionNum", this.planetData._BiomTransotionNum);
+            this.planetData.groundMaterial.SetFloat("_BiomNoiseFrequency", this.planetData._BiomNoiseFrequency);
+            this.planetData.groundMaterial.SetFloat("_BiomNoiseIterations", this.planetData._BiomNoiseIterations);
+            this.planetData.groundMaterial.SetFloat("_BiomNoiseIterationSize", this.planetData._BiomNoiseIterationSize);
+            this.planetData.groundMaterial.SetFloat("_BiomNoisePower", this.planetData._BiomNoisePower);
+            this.planetData.groundMaterial.SetFloat("_BiomNoiseIntensity", this.planetData._BiomNoiseIntensity);
+            this.planetData.groundMaterial.SetFloat("_TileSize", this.planetData._TileSize);
+            this.planetData.groundMaterial.SetFloat("_transitionNum", this.planetData._transitionNum);
+            this.planetData.groundMaterial.SetFloat("_CliffSize", this.planetData._CliffSize);
+
+            // Set texture properties
+            this.planetData.groundMaterial.SetTexture("_Biom1MainTex", this.planetData._Biom1MainTex);
+            this.planetData.groundMaterial.SetTexture("_Biom1NormalMap", this.planetData._Biom1NormalMap);
+            this.planetData.groundMaterial.SetTexture("_Biom1CliffMainTex", this.planetData._Biom1CliffMainTex);
+            this.planetData.groundMaterial.SetTexture("_Biom1CliffNormalMap", this.planetData._Biom1CliffNormalMap);
+            this.planetData.groundMaterial.SetTexture("_Biom2MainTex", this.planetData._Biom2MainTex);
+            this.planetData.groundMaterial.SetTexture("_Biom2NormalMap", this.planetData._Biom2NormalMap);
+            this.planetData.groundMaterial.SetTexture("_Biom2CliffMainTex", this.planetData._Biom2CliffMainTex);
+            this.planetData.groundMaterial.SetTexture("_Biom2CliffNormalMap", this.planetData._Biom2CliffNormalMap);
+
+            //grass propertis
+            // Set float properties
+            this.planetData.grassMaterial = new Material(GrassShader);
+
+            this.planetData.grassMaterial.SetFloat("_Glossiness", this.planetData._Glossiness);
+            this.planetData.grassMaterial.SetFloat("_Metallic", this.planetData._Metallic);
+            this.planetData.grassMaterial.SetFloat("_NoiseFrequency", this.planetData._NoiseFrequency);
+            this.planetData.grassMaterial.SetFloat("_NoiseIterations", this.planetData._NoiseIterations);
+            this.planetData.grassMaterial.SetFloat("_NoiseIterationSize", this.planetData._NoiseIterationSize);
+            this.planetData.grassMaterial.SetFloat("_NoisePower", this.planetData._NoisePower);
+            this.planetData.grassMaterial.SetFloat("_NoiseIntensity", this.planetData._NoiseIntensity);
+            this.planetData.grassMaterial.SetFloat("_BiomTransotionNum", this.planetData._BiomTransotionNum);
+            this.planetData.grassMaterial.SetFloat("_BiomNoiseFrequency", this.planetData._BiomNoiseFrequency);
+            this.planetData.grassMaterial.SetFloat("_BiomNoiseIterations", this.planetData._BiomNoiseIterations);
+            this.planetData.grassMaterial.SetFloat("_BiomNoiseIterationSize", this.planetData._BiomNoiseIterationSize);
+            this.planetData.grassMaterial.SetFloat("_BiomNoisePower", this.planetData._BiomNoisePower);
+            this.planetData.grassMaterial.SetFloat("_BiomNoiseIntensity", this.planetData._BiomNoiseIntensity);
+            this.planetData.grassMaterial.SetFloat("_TileSize", this.planetData._TileSize);
+            this.planetData.grassMaterial.SetFloat("_transitionNum", this.planetData._transitionNum);
+            this.planetData.grassMaterial.SetFloat("_CliffSize", this.planetData._CliffSize);
+
+            this.planetData.grassMaterial.SetFloat("_transitionNum", 1);
+            this.planetData.grassMaterial.SetColor("_TopColor", this.planetData.TopColor);
+            this.planetData.grassMaterial.SetColor("_BottomColor", this.planetData.BottomColor);
+            this.planetData.grassMaterial.SetFloat("_TranslucentGain", 0.2f);
+            this.planetData.grassMaterial.SetFloat("_WindStrength", this.planetData.WindStrength);
+            this.planetData.grassMaterial.SetFloat("_ViewLOD", 48);
+            this.planetData.grassMaterial.SetInt("_MaxStages", 4);
+            this.planetData.grassMaterial.SetFloat("_BaseStages", -0.3f);
+            this.planetData.grassMaterial.SetFloat("_BladeWidth", this.planetData.BladeWidth);
+            this.planetData.grassMaterial.SetFloat("_BladeWidthRandom", this.planetData.BladeWidth*0.2f);
+            this.planetData.grassMaterial.SetFloat("_BladeHeight", this.planetData.BladeHeight);
+            this.planetData.grassMaterial.SetFloat("_BladeHeightRandom", this.planetData.BladeHeight*0.2f);
+            this.planetData.grassMaterial.SetFloat("_BladeForward", this.planetData.BladeStiffnes);
+            this.planetData.grassMaterial.SetFloat("_BladeCurve", this.planetData.BladeCurve);
+            this.planetData.grassMaterial.SetFloat("_CliffSize", 0.962f);
+            this.planetData.grassMaterial.SetFloat("_BendRotationRandom", 0.2f);
+            this.planetData.grassMaterial.SetColor("_Biom1MainTex", this.planetData.Biom1MainTex);
+            this.planetData.grassMaterial.SetColor("_Biom2MainTex", this.planetData.Biom2MainTex);
             for (int chunkSide = 1; chunkSide < 7; chunkSide++)
             {
                 Chunk newchunk = new Chunk();
@@ -499,29 +660,194 @@ public class PlanetGenerator : MonoBehaviour
                 newchunk.chunkSize = newchunkSize;
                 
                 GameObject newChunkGameObject = await GeneratePlane(newchunk2Dposition, newchunkSize, chunkSide, this.planetData,false,false);
-
+                
                 newchunk.chunkWorldPos = newChunkGameObject.GetComponent<MeshFilter>().mesh.vertices[(vertextSideCount * vertextSideCount) /2+ vertextSideCount/2];
                
                 newchunk.chunk = newChunkGameObject;
 
                 this.chunks.Add(newchunk);
             }
+            //making atmosphere
+            Material postProcessingMaterial = new Material(waterAtmosphereShaders);
+            this.planetData.postProcessingMaterial = postProcessingMaterial;
+
+            
+            this.planetData.postProcessingMaterial.SetFloat("_WaterRadius", this.planetData.waterRadius);
+
+            this.planetData.postProcessingMaterial.SetFloat("_mul", this.planetData.oceanMul);
+            this.planetData.postProcessingMaterial.SetFloat("_exp", this.planetData.oceanExp);
+            this.planetData.postProcessingMaterial.SetFloat("_oceanBottom", this.planetData.oceanBottom);
+            this.planetData.oceanHightColorImage = CustomPostProcessing.GradientToTexture2D(this.planetData.oceanHightColor, 1000, 1);
+            this.planetData.postProcessingMaterial.SetTexture("_oceanColor", this.planetData.oceanHightColorImage);
+
+            this.planetData.postProcessingMaterial.SetFloat("freqency", this.planetData.OceanFreqency);
+            this.planetData.postProcessingMaterial.SetInt("iterations", this.planetData.OceanIterations);
+            this.planetData.postProcessingMaterial.SetFloat("iterationSize", this.planetData.OceanIterationSize);
+            this.planetData.postProcessingMaterial.SetFloat("power", this.planetData.OceanPower);
+            this.planetData.postProcessingMaterial.SetFloat("Intensity", this.planetData.OceanIntensity);
+            this.planetData.postProcessingMaterial.SetFloat("_waveStreanght", this.planetData.waveStreanght);
+            this.planetData.postProcessingMaterial.SetFloat("_atmosphereSize", this.planetData.atmosphereSize);
+            this.planetData.postProcessingMaterial.SetFloat("_atmosphereDensity", this.planetData.atmosphereDensity);
+
+            this.planetData.postProcessingMaterial.SetFloat("_cloudsStepSize", this.planetData.cloudsStepSize);
+            this.planetData.postProcessingMaterial.SetFloat("_cloudsFreqency", this.planetData.cloudsFreqency);
+            this.planetData.postProcessingMaterial.SetFloat("_cloudsIterations", this.planetData.cloudsIterations);
+            this.planetData.postProcessingMaterial.SetFloat("_cloudsIterationSize", this.planetData.cloudsIterationSize);
+            this.planetData.postProcessingMaterial.SetFloat("_cloudsPower", this.planetData.cloudsPower);
+            this.planetData.postProcessingMaterial.SetFloat("_cloudsIntensity", this.planetData.cloudsIntensity);
+
+            this.planetData.postProcessingMaterial.SetFloat("_cloudsLayerCentreConcetaration", this.planetData.cloudsLayerCentreConcetaration);
+            this.planetData.postProcessingMaterial.SetFloat("_cloudsHight", this.planetData.cloudsHight);
+            this.planetData.postProcessingMaterial.SetFloat("_cloudsLayerWith", this.planetData.cloudsLayerWith);
+
+            this.planetData.postProcessingMaterial.SetVector("_cloudColor", new Vector4(this.planetData.cloudColor.r, this.planetData.cloudColor.g, this.planetData.cloudColor.b, this.planetData.cloudColor.a));
+
+            this.planetData.postProcessingMaterial.SetFloat("_atmosphericFallof", this.planetData.atmosphericFallof);
+
+            this.planetData.postProcessingMaterial.SetVector("_atmosphereColor", new Vector4(this.planetData.atmosphereColor.r, this.planetData.atmosphereColor.g, this.planetData.atmosphereColor.b, this.planetData.atmosphereColor.a));
+            ////////////////////atmosphere
+            this.planetData.atmosphere = new GameObject("atmosphere");
+            this.planetData.atmosphere.transform.localScale = Vector3.one * this.planetData.atmosphereSize;
+            this.planetData.atmosphere.AddComponent<MeshRenderer>();
+            this.planetData.atmosphere.AddComponent<MeshFilter>();
+
+            Material atmosphereMaterial = new Material(atmosphereShader);
+            atmosphereMaterial.SetFloat("_atmosphereSize", this.planetData.atmosphereSize);
+            atmosphereMaterial.SetFloat("_WaterRadius", this.planetData.waterRadius);
+            atmosphereMaterial.SetFloat("_atmosphereDensity", this.planetData.atmosphereDensity);
+
+            atmosphereMaterial.SetFloat("_cloudsStepSize", this.planetData.cloudsStepSize);
+            atmosphereMaterial.SetFloat("_cloudsFreqency", this.planetData.cloudsFreqency);
+            atmosphereMaterial.SetFloat("_cloudsIterations", this.planetData.cloudsIterations);
+            atmosphereMaterial.SetFloat("_cloudsIterationSize", this.planetData.cloudsIterationSize);
+            atmosphereMaterial.SetFloat("_cloudsPower", this.planetData.cloudsPower);
+            atmosphereMaterial.SetFloat("_cloudsIntensity", this.planetData.cloudsIntensity);
+
+            atmosphereMaterial.SetFloat("_cloudsLayerCentreConcetaration", this.planetData.cloudsLayerCentreConcetaration);
+            atmosphereMaterial.SetFloat("_cloudsHight", this.planetData.cloudsHight);
+            atmosphereMaterial.SetFloat("_cloudsLayerWith", this.planetData.cloudsLayerWith);
+
+            atmosphereMaterial.SetVector("_cloudColor", new Vector4(this.planetData.cloudColor.r, this.planetData.cloudColor.g, this.planetData.cloudColor.b, this.planetData.cloudColor.a));
+
+            atmosphereMaterial.SetFloat("_atmosphericFallof", this.planetData.atmosphericFallof);
+
+            atmosphereMaterial.SetVector("_atmosphereColor", new Vector4(this.planetData.atmosphereColor.r, this.planetData.atmosphereColor.g, this.planetData.atmosphereColor.b, this.planetData.atmosphereColor.a));
+
+            this.planetData.atmosphere.GetComponent<MeshRenderer>().material = atmosphereMaterial;
+            this.planetData.atmosphere.GetComponent<MeshFilter>().mesh = sphere;
+            this.planetData.atmosphere.transform.parent = this.planetData.planetGameObject.transform;
+            ////////////////////////////ocean
+            this.planetData.ocean = new GameObject("ocean");
+            this.planetData.ocean.transform.localScale = Vector3.one * this.planetData.waterRadius* 1.0096f;
+            this.planetData.ocean.AddComponent<MeshRenderer>();
+            this.planetData.ocean.AddComponent<MeshFilter>();
+            this.planetData.ocean.GetComponent<MeshRenderer>().material = waterShader;
+            Color color = this.planetData.oceanHightColor.Evaluate(0.5f);
+            color.a = 0.8f;
+            this.planetData.ocean.GetComponent<MeshRenderer>().material.SetColor("_Color", color);
+            this.planetData.ocean.GetComponent<MeshFilter>().mesh = sphere;
+            this.planetData.ocean.transform.parent = this.planetData.planetGameObject.transform;
+            //asigning
+            CustomPostProcessing.changeDapthTextureMaterials.Add(atmosphereMaterial);
+
+            CustomPostProcessing.planetsPostProcessingMaterial.Add(this.planetData.postProcessingMaterial);
+            //end
+
             planets.Add(this);
-            LoadChunks();
+            DoThings();
         }
-        public async Task LoadChunks()
+        public async Task DoThings()
         {
             bool docCode = true;
             while (docCode == true)
             {
+                //load chunks
                 foreach (Chunk chunk in chunks)
                 {
                     chunk.loadChunks(this.planetData);
                 }
+                //change atmosphere
+                Color lightColor = RenderSettings.sun.color;
+
+                /*
+                this.planetData.postProcessingMaterial.SetFloat("_WaterRadius", this.planetData.waterRadius);
+
+                this.planetData.postProcessingMaterial.SetFloat("_mul", this.planetData.oceanMul);
+                this.planetData.postProcessingMaterial.SetFloat("_exp", this.planetData.oceanExp);
+                this.planetData.postProcessingMaterial.SetFloat("_oceanBottom", this.planetData.oceanBottom);
+                this.planetData.oceanHightColorImage = CustomPostProcessing.GradientToTexture2D(this.planetData.oceanHightColor, 1000, 1);
+                this.planetData.postProcessingMaterial.SetTexture("_oceanColor", this.planetData.oceanHightColorImage);
+
+                this.planetData.postProcessingMaterial.SetFloat("freqency", this.planetData.OceanFreqency);
+                this.planetData.postProcessingMaterial.SetInt("iterations", this.planetData.OceanIterations);
+                this.planetData.postProcessingMaterial.SetFloat("iterationSize", this.planetData.OceanIterationSize);
+                this.planetData.postProcessingMaterial.SetFloat("power", this.planetData.OceanPower);
+                this.planetData.postProcessingMaterial.SetFloat("Intensity", this.planetData.OceanIntensity);
+                this.planetData.postProcessingMaterial.SetFloat("_waveStreanght", this.planetData.waveStreanght);
+                this.planetData.postProcessingMaterial.SetFloat("_atmosphereSize", this.planetData.atmosphereSize);
+                this.planetData.postProcessingMaterial.SetFloat("_atmosphereDensity", this.planetData.atmosphereDensity);
+
+                this.planetData.postProcessingMaterial.SetFloat("_cloudsStepSize", this.planetData.cloudsStepSize);
+                this.planetData.postProcessingMaterial.SetFloat("_cloudsFreqency", this.planetData.cloudsFreqency);
+                this.planetData.postProcessingMaterial.SetFloat("_cloudsIterations", this.planetData.cloudsIterations);
+                this.planetData.postProcessingMaterial.SetFloat("_cloudsIterationSize", this.planetData.cloudsIterationSize);
+                this.planetData.postProcessingMaterial.SetFloat("_cloudsPower", this.planetData.cloudsPower);
+                this.planetData.postProcessingMaterial.SetFloat("_cloudsIntensity", this.planetData.cloudsIntensity);
+
+                this.planetData.postProcessingMaterial.SetFloat("_cloudsLayerCentreConcetaration", this.planetData.cloudsLayerCentreConcetaration);
+                this.planetData.postProcessingMaterial.SetFloat("_cloudsHight", this.planetData.cloudsHight);
+                this.planetData.postProcessingMaterial.SetFloat("_cloudsLayerWith", this.planetData.cloudsLayerWith);
+
+                this.planetData.postProcessingMaterial.SetVector("_cloudColor", new Vector4(this.planetData.cloudColor.r, this.planetData.cloudColor.g, this.planetData.cloudColor.b, this.planetData.cloudColor.a));
+
+                this.planetData.postProcessingMaterial.SetFloat("_atmosphericFallof", this.planetData.atmosphericFallof);
+
+                this.planetData.postProcessingMaterial.SetVector("_atmosphereColor", new Vector4(this.planetData.atmosphereColor.r, this.planetData.atmosphereColor.g, this.planetData.atmosphereColor.b, this.planetData.atmosphereColor.a));
+                */
+                if(Vector3.Distance( player.transform.position, this.planetData.planetGameObject.transform.position)<this.planetData.planetR*4f)
+                {
+                    if (CustomPostProcessing.planetsPostProcessingMaterial.Contains(this.planetData.postProcessingMaterial) == false)
+                    {
+                        CustomPostProcessing.planetsPostProcessingMaterial.Add(this.planetData.postProcessingMaterial);
+                    }
+                    else
+                    {
+                        this.planetData.atmosphere.SetActive(false);
+                        this.planetData.ocean.SetActive(false);
+                    }
+                    this.planetData.postProcessingMaterial.SetVector("_sunDir", RenderSettings.sun.transform.forward);
+                    this.planetData.postProcessingMaterial.SetVector("_sunColor", new Vector4(lightColor.r, lightColor.g, lightColor.b, lightColor.a));
+                    this.planetData.postProcessingMaterial.SetFloat("_sunIntensity", RenderSettings.sun.intensity);
+                    this.planetData.postProcessingMaterial.SetVector("_PlanetPos", this.planetData.planetGameObject.transform.position);
+                }
+                else
+                {
+                    if (CustomPostProcessing.planetsPostProcessingMaterial.Contains(this.planetData.postProcessingMaterial) == true)
+                    {
+                        CustomPostProcessing.planetsPostProcessingMaterial.Remove(this.planetData.postProcessingMaterial);
+                    }else
+                    {
+                        this.planetData.atmosphere.SetActive(true);
+                        this.planetData.ocean.SetActive(true);
+                    }
+                    this.planetData.atmosphere.GetComponent<MeshRenderer>().material.SetVector("_sunDir", RenderSettings.sun.transform.forward);
+                    this.planetData.atmosphere.GetComponent<MeshRenderer>().material.SetVector("_sunColor", new Vector4(lightColor.r, lightColor.g, lightColor.b, lightColor.a));
+                    this.planetData.atmosphere.GetComponent<MeshRenderer>().material.SetFloat("_sunIntensity", RenderSettings.sun.intensity);
+                    this.planetData.atmosphere.GetComponent<MeshRenderer>().material.SetVector("_PlanetPos", this.planetData.planetGameObject.transform.position);
+
+                }
+
+                //this.planetData.ocean.GetComponent<MeshRenderer>().material.SetTexture("_DepthTex", player.transform.GetChild(0).gameObject.GetComponent<Camera>().targetTexture);
+                //this.planetData.atmosphere.GetComponent<MeshRenderer>().material.SetTexture("_DepthTex", player.transform.GetChild(0).gameObject.GetComponent<Camera>().targetTexture);
+
+                this.planetData.groundMaterial.SetVector("_PlanetPosition", this.planetData.planetGameObject.transform.position);
+                this.planetData.grassMaterial.SetVector("_PlanetPosition", this.planetData.planetGameObject.transform.position);
                 await Task.Delay(10);
             }
+            
         }
     }
+
     public static bool isMaking = false; 
     static async Task<GameObject> GeneratePlane(Vector2 posOnSphere, float planeLength, int whatSide,PlanetData planetdata ,bool CreateGrass , bool CreateObjects)
     {
@@ -532,7 +858,6 @@ public class PlanetGenerator : MonoBehaviour
         }
 
         
-
         int vertextTotalCount = vertextSideCount * vertextSideCount;
 
         int kernelHandle = computeShader.FindKernel("VertexGive");
@@ -634,19 +959,23 @@ public class PlanetGenerator : MonoBehaviour
         GameObject plane = new GameObject("plane");
 
         MeshRenderer planeMeshRenderer = plane.AddComponent<MeshRenderer>();
-        planeMeshRenderer.material = planeMaterial;
+        planeMeshRenderer.material = planetdata.groundMaterial;
 
         MeshFilter planeMeshFilter = plane.AddComponent<MeshFilter>();
         planeMeshFilter.mesh = planeMesh;
 
         plane.transform.parent = planetdata.planetGameObject.transform;
 
+        plane.transform.localPosition = Vector3.zero;
+        plane.transform.localEulerAngles = Vector3.zero;
+
         if (CreateGrass == true)
         {
             GameObject grassPlane = Instantiate(plane);
 
-            grassPlane.GetComponent<MeshRenderer>().material = grassMaterial;
+            grassPlane.GetComponent<MeshRenderer>().material = planetdata.grassMaterial;
             grassPlane.transform.parent = plane.transform;
+            grassPlane.transform.localPosition = Vector3.zero;
         }
 
         if (CreateObjects == true)
@@ -664,7 +993,7 @@ public class PlanetGenerator : MonoBehaviour
                     //if (objectInf[i].type == 200)
                     //{
                         GameObject newGameobject = Instantiate(planetdata.PlanetTypeInfoObjects[objectInf[i].type]);
-                        newGameobject.transform.position = objectInf[i].pos;
+                        newGameobject.transform.position = objectInf[i].pos + planetdata.planetGameObject.transform.position;
                         newGameobject.transform.rotation = new Quaternion(objectInf[i].rot.x, objectInf[i].rot.y, objectInf[i].rot.z, objectInf[i].rot.w);
                         newGameobject.transform.parent = ObjectParent.transform;
                    //}

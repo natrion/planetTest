@@ -239,8 +239,8 @@ Light:
   m_Enabled: 1
   serializedVersion: 11
   m_Type: 1
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Intensity: 1
+  m_Color: {r: 0.98490566, g: 0.98490566, b: 0.98490566, a: 1}
+  m_Intensity: 2
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -298,13 +298,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0.51091826, z: -0, w: -0.85962933}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 298.55, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -410,63 +410,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0131e392249259745b33cf17880628fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  postProcessingMaterial: {fileID: 2100000, guid: 9b6b9ec7e9e2cf8458df4f23bc039dcc, type: 2}
-  _PlanetPos: {x: 0, y: 0, z: 0}
-  waterRadius: 2600
-  mul: 9
-  exp: 3
-  oceanBottom: 80
-  oceanHightColor:
-    serializedVersion: 2
-    key0: {r: 1, g: 1, b: 1, a: 1}
-    key1: {r: 0.1230331, g: 0.38151875, b: 0.7245283, a: 1}
-    key2: {r: 0, g: 0.115252204, b: 0.26415092, a: 0}
-    key3: {r: 0, g: 0, b: 0, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 1079
-    ctime2: 38473
-    ctime3: 0
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: -1
-    m_NumColorKeys: 3
-    m_NumAlphaKeys: 2
-  test: {fileID: 2051042688}
-  frequency: 0.005
-  iterations: 6
-  iterationSize: 2
-  power: 1
-  Intensity: 0.5
-  waveStreanght: 1
-  atmosphereSize: 4196
-  atmosphereDensity: 0.000009
-  atmosphereColor: {r: 0.35372016, g: 0.47498533, b: 0.6943395, a: 0}
-  atmosphericFallof: 1.84
-  cloudsStepSize: 50
-  cloudsFreqency: 0.005
-  cloudsIterations: 3
-  cloudsIterationSize: 1.5
-  cloudsPower: 1
-  cloudsIntensity: 0.04
-  cloudsHight: 169.1
-  cloudsLayerWith: 100
-  cloudsLayerCentreConcetaration: 1.26
-  cloudColor: {r: 1, g: 1, b: 1, a: 0}
+  depthTexture: {fileID: 0}
 --- !u!1 &1052627999
 GameObject:
   m_ObjectHideFlags: 0
@@ -569,15 +513,15 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1052627999}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: -0.055472888, w: 0.99846023}
-  m_LocalPosition: {x: 0, y: -69, z: -6668}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -5000}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 963194228}
   - {fileID: 585697098}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -6.36}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1052628004
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -743,20 +687,226 @@ MonoBehaviour:
     valleyHight: 100
     valleyDistortion: 0.003
     valleyPower: 1
+    postProcessingMaterial: {fileID: 0}
+    waterRadius: 2600
+    oceanMul: 9
+    oceanExp: 3
+    oceanBottom: 80
+    oceanHightColor:
+      serializedVersion: 2
+      key0: {r: 1, g: 1, b: 1, a: 1}
+      key1: {r: 0.1230331, g: 0.38151875, b: 0.7245283, a: 1}
+      key2: {r: 0, g: 0.115252204, b: 0.26415092, a: 0}
+      key3: {r: 0, g: 0, b: 0, a: 0}
+      key4: {r: 0, g: 0, b: 0, a: 0}
+      key5: {r: 0, g: 0, b: 0, a: 0}
+      key6: {r: 0, g: 0, b: 0, a: 0}
+      key7: {r: 0, g: 0, b: 0, a: 0}
+      ctime0: 0
+      ctime1: 1079
+      ctime2: 38473
+      ctime3: 0
+      ctime4: 0
+      ctime5: 0
+      ctime6: 0
+      ctime7: 0
+      atime0: 0
+      atime1: 65535
+      atime2: 0
+      atime3: 0
+      atime4: 0
+      atime5: 0
+      atime6: 0
+      atime7: 0
+      m_Mode: 0
+      m_ColorSpace: -1
+      m_NumColorKeys: 3
+      m_NumAlphaKeys: 2
+    oceanHightColorImage: {fileID: 0}
+    WaterBlackSpotsFrequency: 0.005
+    WaterBlackSpotsIterations: 6
+    WaterBlackSpotsIterationSize: 2
+    WaterBlackSpotsPower: 1
+    WaterBlackSpotsIntensity: 0.5
+    waveStreanght: 1
+    atmosphereSize: 4170
+    atmosphereDensity: 0.00004
+    atmosphereColor: {r: 0.3529412, g: 0.47450984, b: 0.69411767, a: 0}
+    atmosphericFallof: 1.2
+    cloudsStepSize: 50
+    cloudsFreqency: 0.005
+    cloudsIterations: 3
+    cloudsIterationSize: 1.5
+    cloudsPower: 1
+    cloudsIntensity: 0.08
+    cloudsHight: 516.7
+    cloudsLayerWith: 100
+    cloudsLayerCentreConcetaration: 1.26
+    cloudColor: {r: 1, g: 1, b: 1, a: 0}
+    groundMaterial: {fileID: 0}
+    _Glossiness: 0
+    _Metallic: 0
+    _NoiseFrequency: 0.21
+    _NoiseIterations: 4
+    _NoiseIterationSize: 1.47
+    _NoisePower: 1.96
+    _NoiseIntensity: 20.42
+    _Biom1MainTex: {fileID: 2800000, guid: 819311b7a66a8f740b104cf9f9ffadf5, type: 3}
+    _Biom1NormalMap: {fileID: 2800000, guid: 8b6ec8cd3adbc7a45a52309309dff911, type: 3}
+    _Biom1CliffMainTex: {fileID: 2800000, guid: c2e975e8a074dff45aee75e580a54344, type: 3}
+    _Biom1CliffNormalMap: {fileID: 2800000, guid: 48c3f9bf0c6c95b4e8a00c6b9a8162be, type: 3}
+    _Biom2MainTex: {fileID: 2800000, guid: 5c38e2edb8ae412468d3186b2e38caf1, type: 3}
+    _Biom2NormalMap: {fileID: 2800000, guid: 32e75137122e86e419af0c829889e58c, type: 3}
+    _Biom2CliffMainTex: {fileID: 2800000, guid: feea2cf97829c484a9cecfa8a63aba3e, type: 3}
+    _Biom2CliffNormalMap: {fileID: 2800000, guid: deca3a760cbc7544a905fd00cdef71e9, type: 3}
+    _TileSize: 0.3
+    _transitionNum: 0.14
+    _CliffSize: 5.21
     _BiomTransotionNum: 7.77
     _BiomNoiseFrequency: 0.001
     _BiomNoiseIterations: 4
     _BiomNoiseIterationSize: 1.83
     _BiomNoisePower: 1
     _BiomNoiseIntensity: 3.8
+    grassMaterial: {fileID: 0}
+    TopColor: {r: 0.62352943, g: 0.62352943, b: 0.62352943, a: 0}
+    BottomColor: {r: 1, g: 1, b: 1, a: 0}
+    WindStrength: 0.5
+    BladeWidth: 0.05
+    BladeHeight: 0.5
+    BladeCurve: 0.5
+    Biom1MainTex: {r: 0.4862745, g: 0.7372549, b: 0.35686275, a: 0}
+    Biom2MainTex: {r: 1, g: 0.85490197, b: 0.5764706, a: 0}
+    BladeStiffnes: 0.5
+    atmosphere: {fileID: 0}
+    ocean: {fileID: 0}
+  nonStaticGroundShader: {fileID: 4800000, guid: 06f55f00d679c5a4cabcdaba43c09669, type: 3}
+  nonStaticGrassShader: {fileID: 4800000, guid: 8dda9c2fbd1b85a45a6f2f1af7d4ba50, type: 3}
   planeMaterialNostatic: {fileID: 2100000, guid: 8b89e1596389cff41a2cdfb07f138cfa, type: 2}
   computeShaderNostatic: {fileID: 7200000, guid: 3f3ed6071a38298489602b712666723f, type: 3}
   playerNostatic: {fileID: 1052627999}
+  nonStatic_waterAtmosphereShaders: {fileID: 4800000, guid: b3907c4c195b6cc46b900cdbd9750d29, type: 3}
   vertextSideCountNostatic: 60
-  grassMaterialNonStatic: {fileID: 2100000, guid: b36137c307e52ab4895e92935d72d71c, type: 2}
+  planet:
+    planetData:
+      PlanetTypeInfo: []
+      PlanetTypeInfoObjects: []
+      AtmosphericDrag: 0
+      planetR: 0
+      frequency: 0
+      iterations: 0
+      iterationSize: 0
+      power: 0
+      Intensity: 0
+      planetGameObject: {fileID: 0}
+      OceanFreqency: 0
+      OceanIterations: 0
+      OceanIterationSize: 0
+      OceanPower: 0
+      OceanIntensity: 0
+      valleyHight: 0
+      valleyDistortion: 0
+      valleyPower: 0
+      postProcessingMaterial: {fileID: 0}
+      waterRadius: 0
+      oceanMul: 0
+      oceanExp: 0
+      oceanBottom: 0
+      oceanHightColor:
+        serializedVersion: 2
+        key0: {r: 1, g: 1, b: 1, a: 1}
+        key1: {r: 1, g: 1, b: 1, a: 1}
+        key2: {r: 0, g: 0, b: 0, a: 0}
+        key3: {r: 0, g: 0, b: 0, a: 0}
+        key4: {r: 0, g: 0, b: 0, a: 0}
+        key5: {r: 0, g: 0, b: 0, a: 0}
+        key6: {r: 0, g: 0, b: 0, a: 0}
+        key7: {r: 0, g: 0, b: 0, a: 0}
+        ctime0: 0
+        ctime1: 65535
+        ctime2: 0
+        ctime3: 0
+        ctime4: 0
+        ctime5: 0
+        ctime6: 0
+        ctime7: 0
+        atime0: 0
+        atime1: 65535
+        atime2: 0
+        atime3: 0
+        atime4: 0
+        atime5: 0
+        atime6: 0
+        atime7: 0
+        m_Mode: 0
+        m_ColorSpace: -1
+        m_NumColorKeys: 2
+        m_NumAlphaKeys: 2
+      oceanHightColorImage: {fileID: 0}
+      WaterBlackSpotsFrequency: 0
+      WaterBlackSpotsIterations: 0
+      WaterBlackSpotsIterationSize: 0
+      WaterBlackSpotsPower: 0
+      WaterBlackSpotsIntensity: 0
+      waveStreanght: 0
+      atmosphereSize: 0
+      atmosphereDensity: 0
+      atmosphereColor: {r: 0, g: 0, b: 0, a: 0}
+      atmosphericFallof: 0
+      cloudsStepSize: 0
+      cloudsFreqency: 0
+      cloudsIterations: 0
+      cloudsIterationSize: 0
+      cloudsPower: 0
+      cloudsIntensity: 0
+      cloudsHight: 0
+      cloudsLayerWith: 0
+      cloudsLayerCentreConcetaration: 0
+      cloudColor: {r: 0, g: 0, b: 0, a: 0}
+      groundMaterial: {fileID: 0}
+      _Glossiness: 0
+      _Metallic: 0
+      _NoiseFrequency: 0
+      _NoiseIterations: 0
+      _NoiseIterationSize: 0
+      _NoisePower: 0
+      _NoiseIntensity: 0
+      _Biom1MainTex: {fileID: 0}
+      _Biom1NormalMap: {fileID: 0}
+      _Biom1CliffMainTex: {fileID: 0}
+      _Biom1CliffNormalMap: {fileID: 0}
+      _Biom2MainTex: {fileID: 0}
+      _Biom2NormalMap: {fileID: 0}
+      _Biom2CliffMainTex: {fileID: 0}
+      _Biom2CliffNormalMap: {fileID: 0}
+      _TileSize: 0
+      _transitionNum: 0
+      _CliffSize: 0
+      _BiomTransotionNum: 0
+      _BiomNoiseFrequency: 0
+      _BiomNoiseIterations: 0
+      _BiomNoiseIterationSize: 0
+      _BiomNoisePower: 0
+      _BiomNoiseIntensity: 0
+      grassMaterial: {fileID: 0}
+      TopColor: {r: 0, g: 0, b: 0, a: 0}
+      BottomColor: {r: 0, g: 0, b: 0, a: 0}
+      WindStrength: 0
+      BladeWidth: 0
+      BladeHeight: 0
+      BladeCurve: 0
+      Biom1MainTex: {r: 0, g: 0, b: 0, a: 0}
+      Biom2MainTex: {r: 0, g: 0, b: 0, a: 0}
+      BladeStiffnes: 0
+      atmosphere: {fileID: 0}
+      ocean: {fileID: 0}
+    chunks: []
   test: {fileID: 0}
   chunkGeneratingDistanceNostatic: 5
   chunkInChunkSideNostatic: 3
+  sphereNonStatic: {fileID: 4711208715938537054, guid: 8d72e4bc491dd0746ad53548af47f204, type: 3}
+  atmosphereShaderNonStatic: {fileID: 4800000, guid: 62911fe0ea2972048bad56792df4d313, type: 3}
+  waterShaderNonStatic: {fileID: 2100000, guid: 5fdbbda8b81645c4c809f92cfdd80b2f, type: 2}
 --- !u!4 &1394525382
 Transform:
   m_ObjectHideFlags: 0
@@ -772,52 +922,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!28 &2051042688
-Texture2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 3
-  m_Width: 1000
-  m_Height: 1
-  m_CompleteImageSize: 7976
-  m_MipsStripped: 0
-  m_TextureFormat: 4
-  m_MipCount: 10
-  m_IsReadable: 1
-  m_IsPreProcessed: 0
-  m_IgnoreMipmapLimit: 1
-  m_MipmapLimitGroupName: 
-  m_StreamingMipmaps: 0
-  m_StreamingMipmapsPriority: 0
-  m_VTOnly: 0
-  m_AlphaIsTransparency: 0
-  m_ImageCount: 1
-  m_TextureDimension: 2
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 0
-    m_WrapV: 0
-    m_WrapW: 0
-  m_LightmapFormat: 0
-  m_ColorSpace: 1
-  m_PlatformBlob: 
-  image data: 7976
-  _typelessdata: fffffffff1f5fbffe4ecf6ffd6e2f2ffc9d9eeffbbcfeaffadc5e5ffa0bce1ff92b2ddff85a9d9ff779fd4ff6996d0ff5c8cccff4e82c7ff4179c3ff336fbfff2566bbff1f61b9ff1f61b8ff1f61b8ff1f61b8ff1f61b8ff1f61b8ff1f61b7ff1f60b7ff1f60b7ff1f60b7ff1f60b7ff1f60b6ff1f60b6ff1f60b6ff1f60b6ff1f5fb6ff1e5fb5ff1e5fb5ff1e5fb5ff1e5fb5ff1e5fb5ff1e5fb4ff1e5fb4ff1e5eb4ff1e5eb4ff1e5eb3ff1e5eb3ff1e5eb3ff1e5eb3ff1e5eb3ff1e5eb2ff1e5eb2ff1e5db2ff1e5db2ff1d5db2ff1d5db1ff1d5db1ff1d5db1ff1d5db1ff1d5db1ff1d5cb0ff1d5cb0ff1d5cb0ff1d5cb0ff1d5cb0ff1d5cafff1d5cafff1d5cafff1d5cafff1d5bafff1d5baeff1d5baeff1c5baeff1c5baeff1c5baeff1c5badff1c5badff1c5aadff1c5aadff1c5aacff1c5aacff1c5aacff1c5aacff1c5aacff1c5aabff1c59abff1c59abff1c59abff1c59abff1c59aaff1b59aaff1b59aaff1b59aaff1b59aaff1b58a9ff1b58a9ff1b58a9ff1b58a9ff1b58a9ff1b58a8ff1b58a8ff1b58a8ff1b57a8ff1b57a8ff1b57a7ff1b57a7ff1b57a7ff1b57a7ff1a57a7ff1a57a6ff1a57a6ff1a56a6ff1a56a6ff1a56a5ff1a56a5ff1a56a5ff1a56a5ff1a56a5ff1a56a4ff1a55a4ff1a55a4ff1a55a4ff1a55a4ff1a55a3ff1a55a3ff1a55a3ff1a55a3ff1954a3ff1954a2ff1954a2ff1954a2ff1954a2ff1954a2ff1954a1ff1954a1ff1954a1ff1953a1ff1953a1ff1953a0ff1953a0ff1953a0ff1953a0ff1953a0ff19539fff19529fff18529fff18529fff18529eff18529eff18529eff18529eff18529eff18519dff18519dff18519dff18519dff18519dff18519cff18519cff18519cff18519cff18509cff18509bff17509bff17509bff17509bff17509bff17509aff17509aff174f9aff174f9aff174f9aff174f99ff174f99ff174f99ff174f99ff174f99ff174f98ff174e98ff174e98ff174e98ff164e97ff164e97ff164e97ff164e97ff164e97ff164d96ff164d96ff164d96ff164d96ff164d96ff164d95ff164d95ff164d95ff164c95ff164c95ff164c94ff164c94ff164c94ff154c94ff154c94ff154c93ff154c93ff154b93ff154b93ff154b93ff154b92ff154b92ff154b92ff154b92ff154b92ff154a91ff154a91ff154a91ff154a91ff154a90ff154a90ff154a90ff144a90ff144a90ff14498fff14498fff14498fff14498fff14498fff14498eff14498eff14498eff14488eff14488eff14488dff14488dff14488dff14488dff14488dff14488cff13478cff13478cff13478cff13478cff13478bff13478bff13478bff13478bff13478bff13468aff13468aff13468aff13468aff134689ff134689ff134689ff134689ff134589ff124588ff124588ff124588ff124588ff124588ff124587ff124587ff124587ff124487ff124487ff124486ff124486ff124486ff124486ff124486ff124485ff124385ff124385ff114385ff114385ff114384ff114384ff114384ff114384ff114284ff114283ff114283ff114283ff114283ff114282ff114282ff114282ff114282ff114182ff114181ff114181ff104181ff104181ff104181ff104180ff104180ff104080ff104080ff104080ff10407fff10407fff10407fff10407fff10407fff10407eff103f7eff103f7eff103f7eff103f7eff0f3f7dff0f3f7dff0f3f7dff0f3f7dff0f3e7dff0f3e7cff0f3e7cff0f3e7cff0f3e7cff0f3e7bff0f3e7bff0f3e7bff0f3d7bff0f3d7bff0f3d7aff0f3d7aff0f3d7aff0f3d7aff0f3d7aff0e3d79ff0e3d79ff0e3c79ff0e3c79ff0e3c79ff0e3c78ff0e3c78ff0e3c78ff0e3c78ff0e3c78ff0e3b77ff0e3b77ff0e3b77ff0e3b77ff0e3b77ff0e3b76ff0e3b76ff0e3b76ff0d3b76ff0d3a76ff0d3a75ff0d3a75ff0d3a75ff0d3a75ff0d3a74ff0d3a74ff0d3a74ff0d3974ff0d3974ff0d3973ff0d3973ff0d3973ff0d3973ff0d3973ff0d3972ff0d3872ff0c3872ff0c3872ff0c3872ff0c3871ff0c3871ff0c3871ff0c3871ff0c3871ff0c3770ff0c3770ff0c3770ff0c3770ff0c3770ff0c376fff0c376fff0c376fff0c366fff0c366eff0b366eff0b366eff0b366eff0b366eff0b366dff0b366dff0b366dff0b356dff0b356dff0b356cff0b356cff0b356cff0b356cff0b356cff0b356bff0b346bff0b346bff0b346bff0a346bff0a346aff0a346aff0a346aff0a346aff0a336aff0a3369ff0a3369ff0a3369ff0a3369ff0a3369ff0a3368ff0a3368ff0a3368ff0a3268ff0a3267ff0a3267ff0a3267ff093267ff093267ff093266ff093266ff093166ff093166ff093166ff093165ff093165ff093165ff093165ff093165ff093164ff093064ff093064ff093064ff093064ff093063ff093063ff083063ff083063ff082f63ff082f62ff082f62ff082f62ff082f62ff082f62ff082f61ff082f61ff082e61ff082e61ff082e60ff082e60ff082e60ff082e60ff082e60ff082e5fff072e5fff072d5fff072d5fff072d5fff072d5eff072d5eff072d5eff072d5eff072d5eff072c5dff072c5dff072c5dff072c5dff072c5dff072c5cff072c5cff072c5cff072c5cff062b5cff062b5bff062b5bff062b5bff062b5bff062b5bff062b5aff062b5aff062a5aff062a5aff062a59ff062a59ff062a59ff062a59ff062a59ff062a58ff062958ff062958ff052958ff052958ff052957ff052957ff052957ff052957ff052957ff052856ff052856ff052856ff052856ff052856ff052855ff052855ff052855ff052755ff052755ff052754ff042754ff042754ff042754ff042754ff042753ff042653ff042653ff042653ff042652ff042652ff042652ff042652ff042652ff042651ff042551ff042551ff042551ff042551ff032550ff032550ff032550ff032550ff032450ff03244fff03244fff03244fff03244fff03244fff03244eff03244eff03244eff03234eff03234eff03234dff03234dff03234dff03234dff02234dff02234cff02224cff02224cff02224cff02224bff02224bff02224bff02224bff02224bff02214aff02214aff02214aff02214aff02214aff022149ff022149ff022149ff012149ff012049ff012048ff012048ff012048ff012048ff012048ff012047ff012047ff011f47ff011f47ff011f47ff011f46ff011f46ff011f46ff011f46ff011f46ff011f45ff001e45ff001e45ff001e45ff001e44ff001e44ff001e44ff001e44ff001e44ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43fff8fafdffdde7f4ffc2d4ecffa6c0e3ff8baddbff709ad2ff5587c9ff3a74c1ff2263baff1f61b8ff1f61b8ff1f61b7ff1f60b7ff1f60b7ff1f60b6ff1f60b6ff1e5fb5ff1e5fb5ff1e5fb5ff1e5fb4ff1e5eb4ff1e5eb3ff1e5eb3ff1e5eb2ff1e5db2ff1d5db2ff1d5db1ff1d5db1ff1d5cb0ff1d5cb0ff1d5cb0ff1d5cafff1d5cafff1d5baeff1c5baeff1c5baeff1c5badff1c5aadff1c5aacff1c5aacff1c5aabff1c59abff1c59abff1b59aaff1b59aaff1b58a9ff1b58a9ff1b58a9ff1b58a8ff1b57a8ff1b57a7ff1b57a7ff1a57a7ff1a57a6ff1a56a6ff1a56a5ff1a56a5ff1a56a4ff1a55a4ff1a55a4ff1a55a3ff1a55a3ff1954a2ff1954a2ff1954a2ff1954a1ff1953a1ff1953a0ff1953a0ff1953a0ff19529fff18529fff18529eff18529eff18519dff18519dff18519dff18519cff18519cff18509bff17509bff17509bff17509aff174f9aff174f99ff174f99ff174f99ff174e98ff174e98ff164e97ff164e97ff164d96ff164d96ff164d96ff164d95ff164c95ff164c94ff164c94ff154c94ff154c93ff154b93ff154b92ff154b92ff154b92ff154a91ff154a91ff154a90ff144a90ff14498fff14498fff14498fff14498eff14488eff14488dff14488dff14488dff13478cff13478cff13478bff13478bff13478bff13468aff13468aff134689ff134689ff124588ff124588ff124588ff124587ff124487ff124486ff124486ff124486ff124385ff114385ff114384ff114384ff114284ff114283ff114283ff114282ff114282ff114181ff104181ff104181ff104180ff104080ff10407fff10407fff10407fff103f7eff103f7eff0f3f7dff0f3f7dff0f3e7dff0f3e7cff0f3e7cff0f3e7bff0f3d7bff0f3d7aff0f3d7aff0f3d7aff0e3d79ff0e3c79ff0e3c78ff0e3c78ff0e3c78ff0e3b77ff0e3b77ff0e3b76ff0e3b76ff0d3a76ff0d3a75ff0d3a75ff0d3a74ff0d3974ff0d3973ff0d3973ff0d3973ff0d3872ff0c3872ff0c3871ff0c3871ff0c3871ff0c3770ff0c3770ff0c376fff0c376fff0c366eff0b366eff0b366eff0b366dff0b356dff0b356cff0b356cff0b356cff0b346bff0b346bff0a346aff0a346aff0a336aff0a3369ff0a3369ff0a3368ff0a3368ff0a3267ff0a3267ff093267ff093266ff093166ff093165ff093165ff093165ff093064ff093064ff093063ff083063ff082f63ff082f62ff082f62ff082f61ff082e61ff082e60ff082e60ff082e60ff072e5fff072d5fff072d5eff072d5eff072d5eff072c5dff072c5dff072c5cff072c5cff062b5cff062b5bff062b5bff062b5aff062a5aff062a59ff062a59ff062a59ff062958ff052958ff052957ff052957ff052957ff052856ff052856ff052855ff052855ff052755ff042754ff042754ff042753ff042653ff042652ff042652ff042652ff042551ff042551ff032550ff032550ff032450ff03244fff03244fff03244eff03244eff03234eff03234dff03234dff02234cff02224cff02224bff02224bff02224bff02214aff02214aff022149ff022149ff012049ff012048ff012048ff012047ff011f47ff011f47ff011f46ff011f46ff011f45ff001e45ff001e44ff001e44ff001e44ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ffeaf0f8ffb4cae7ff7da3d6ff477dc5ff2062b9ff1f61b7ff1f60b7ff1f60b6ff1e5fb5ff1e5fb4ff1e5eb3ff1e5eb2ff1d5db2ff1d5db1ff1d5cb0ff1d5cafff1d5baeff1c5baeff1c5aadff1c5aacff1c59abff1b59aaff1b58a9ff1b58a9ff1b57a8ff1b57a7ff1a57a6ff1a56a5ff1a56a4ff1a55a4ff1a55a3ff1954a2ff1954a1ff1953a0ff1953a0ff18529fff18529eff18519dff18519cff18509bff17509bff174f9aff174f99ff174e98ff164e97ff164d96ff164d96ff164c95ff164c94ff154c93ff154b92ff154b92ff154a91ff144a90ff14498fff14498eff14488dff14488dff13478cff13478bff13468aff134689ff124588ff124588ff124487ff124486ff124385ff114384ff114284ff114283ff114282ff104181ff104180ff10407fff10407fff103f7eff0f3f7dff0f3e7cff0f3e7bff0f3d7aff0f3d7aff0e3c79ff0e3c78ff0e3b77ff0e3b76ff0d3a76ff0d3a75ff0d3974ff0d3973ff0d3872ff0c3871ff0c3871ff0c3770ff0c376fff0b366eff0b366dff0b356cff0b356cff0b346bff0a346aff0a3369ff0a3368ff0a3267ff093267ff093166ff093165ff093064ff093063ff082f63ff082f62ff082e61ff082e60ff072e5fff072d5eff072d5eff072c5dff072c5cff062b5bff062b5aff062a59ff062a59ff052958ff052957ff052856ff052855ff052755ff042754ff042653ff042652ff042551ff032550ff032450ff03244fff03244eff03234dff02234cff02224bff02224bff02214aff022149ff012048ff012047ff011f47ff011f46ff001e45ff001e44ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ffcfddefff6290cdff1f61b8ff1f60b6ff1e5fb4ff1e5eb2ff1d5db1ff1d5cafff1c5baeff1c5aacff1b59aaff1b58a9ff1b57a7ff1a56a5ff1a55a4ff1954a2ff1953a0ff18529fff18519dff18509bff174f9aff174e98ff164d96ff164c95ff154c93ff154b92ff144a90ff14498eff14488dff13478bff134689ff124588ff124486ff114384ff114283ff104181ff10407fff103f7eff0f3e7cff0f3d7aff0e3c79ff0e3b77ff0d3a76ff0d3974ff0d3872ff0c3871ff0c376fff0b366dff0b356cff0a346aff0a3368ff093267ff093165ff093063ff082f62ff082e60ff072d5eff072c5dff062b5bff062a59ff052958ff052856ff052755ff042653ff042551ff032450ff03244eff02234cff02224bff022149ff012047ff011f46ff001e44ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff97b5ddff1f60b6ff1e5eb2ff1d5cafff1c5aacff1b58a9ff1a56a5ff1954a2ff18529fff18509bff174e98ff164c95ff154b92ff14498eff13478bff124588ff114384ff104181ff103f7eff0f3d7aff0e3b77ff0d3974ff0c3871ff0b366dff0a346aff093267ff093063ff082e60ff072c5dff062a59ff052856ff042552ff03244fff02224bff012048ff001e45ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff5b8ac9ff1d5db0ff1b59aaff1955a3ff18519dff164d96ff144a90ff124689ff104282ff0f3e7cff0d3a75ff0b376fff093368ff082f61ff062b5bff042654ff02234dff001f46ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff3a72bbff1956a5ff164e98ff12478aff0f3e7dff0b376fff082f61ff042654ff001e45ff001d43ff001d43ff001d43ff001d43ff001d43ff001d43ff2762aeff13498eff0b3871ff042654ff001d43ff001d43ff001d43ff195198ff042654ff001d43ff042654ff
-  m_StreamData:
-    serializedVersion: 2
-    offset: 0
-    size: 0
-    path: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

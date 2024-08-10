@@ -212,7 +212,7 @@
 					output.viewVector = mul(unity_CameraToWorld, float4(viewVector,0));
 					return output;
 			}
-			 float hash(float3 p) {
+			float hash(float3 p) {
 				p = float3(dot(p, float3(127.1, 311.7, 74.7)),
 							dot(p, float3(269.5, 183.3, 246.1)),
 							dot(p, float3(113.5, 271.9, 124.6)));
@@ -432,11 +432,9 @@
 
 			float4 findAtmosphereColor(float3 hit,float3 exit,float4 originalCol,bool inAtmosphere)
 			{
-				//float atmosphereSize = _atmosphereSize ;
-				//float hightFromSeeLevel0to1 = (( distance(lerp(hit,exit,0.5),_PlanetPos) - _WaterRadius+_atmosphericFallof) )/(atmosphereSize - _WaterRadius+_atmosphericFallof);
-				//float avarageDesnsity = 1/(max(hightFromSeeLevel0to1,0.01));
+				float3 PlanetPos = float3(0,0,0);
 				float3 midlePoint = lerp(hit,exit,0.5);
-				float3 distances = float3((  distance(hit,_PlanetPos)-_WaterRadius) / (_atmosphereSize-_WaterRadius),(distance(midlePoint,_PlanetPos)-_WaterRadius) / (_atmosphereSize-_WaterRadius),( distance(exit,_PlanetPos)-_WaterRadius) / (_atmosphereSize-_WaterRadius));
+				float3 distances = float3((  distance(hit,PlanetPos)-_WaterRadius) / (_atmosphereSize-_WaterRadius),(distance(midlePoint,PlanetPos)-_WaterRadius) / (_atmosphereSize-_WaterRadius),( distance(exit,PlanetPos)-_WaterRadius) / (_atmosphereSize-_WaterRadius));
 			    distances = clamp(distances + float3(0.01,0.01,0.01),float3(0.001,0.001,0.001),float3(1,1,1));
 				float avrg1 = AverageExpValue(distances.x,distances.y);
 				float avrg2 = AverageExpValue(distances.y,distances.z);
@@ -453,21 +451,37 @@
 				{										
 					float3 pos = lerp(hit,exit,distanceTraveld/endStartDis);
 
-					float hight =distance(pos, _PlanetPos)-_WaterRadius;
+					float hight =distance(pos, PlanetPos)-_WaterRadius;
 					float cloudsHightMulNum =  pow(_cloudsLayerWith / max(abs( hight- _cloudsHight),_cloudsLayerWith),_cloudsLayerCentreConcetaration);
 
 					cloudValue += generateComplexGradientNoise(pos, _cloudsFreqency, _cloudsIterations, _cloudsIterationSize, _cloudsPower,_cloudsIntensity) * cloudsHightMulNum;
 					
-					distanceTraveld += _cloudsStepSize * max((abs( hight- _cloudsHight)/(_atmosphereSize-_WaterRadius))*25,1);
+					distanceTraveld += _cloudsStepSize * max((abs( hight- _cloudsHight)/(_atmosphereSize-_WaterRadius))*50,1);
 					steps++;
 				}
+
 				cloudValue = min(cloudValue,1);
 				float mul  = endStartDis *avrgDensity* _atmosphereDensity;
 
 				float4 cloudsPlusColor = _cloudColor * cloudValue;
 
 				mul = clamp(mul,0,1);
-				return lerp(originalCol , _atmosphereColor,mul)  + cloudsPlusColor ;//*avarageDesnsity;
+
+			    float3 lightDir = normalize(_sunDir.xyz);
+				float3 normalDir;
+				if(inAtmosphere == true)
+				{
+					 normalDir = CalculateNormalDir(hit);
+				}else{
+					 normalDir = CalculateNormalDir(hit);
+				}
+				float pointShine = dot(normalDir,lightDir*-1)*0.5+0.5;
+				float sunIntensityModifi = NthRoot( _sunIntensity ,2)/2;
+
+				float4 LightedAtmosphereColor = lerp(float4(0,0,0,1), _atmosphereColor + _sunColor*sunIntensityModifi,pointShine*sunIntensityModifi );
+				float4 LightedCloudsPlusColor = lerp(float4(0,0,0,1), float4 (cloudsPlusColor.x * _sunColor.x*sunIntensityModifi,cloudsPlusColor.y * _sunColor.y*sunIntensityModifi,cloudsPlusColor.z * _sunColor.z*sunIntensityModifi,1 ),pointShine*sunIntensityModifi );
+
+				return lerp(originalCol , LightedAtmosphereColor,mul)  + LightedCloudsPlusColor ;//*avarageDesnsity;
 			}
 			float4 findOceanColor(float3 hit,float3 exit,float4 originalCol,bool inWater)
 			{
@@ -505,24 +519,26 @@
 				bool interacted;
 				bool inWater;
 			};
-			getHit1Hit2onSphereOutput getHit1Hit2onSphere(float3 _PlanetPos,float3 PlayerPos ,float3 rayDir ,float _WaterRadius,float sceneDepth)
+			getHit1Hit2onSphereOutput getHit1Hit2onSphere(float3 PlayerPos ,float3 rayDir ,float _WaterRadius,float sceneDepth)
 			{
+				float3 PlanetPos = float3(0,0,0);
+
 				getHit1Hit2onSphereOutput result ;
 
-				float PlayerPlanetDis = distance(PlayerPos, _PlanetPos);
+				float PlayerPlanetDis = distance(PlayerPos, PlanetPos);
 				
 				float DistanceToTheFarhestVisiblePointOnSphere = CalculateDistanceToTheFarhestVisiblePointOnSphere(_WaterRadius,PlayerPlanetDis);
 
 				float3 rayMiddleplanetPos = rayDir*DistanceToTheFarhestVisiblePointOnSphere+PlayerPos;
 
-				float rayMiddlePlanetDis = distance(rayMiddleplanetPos,_PlanetPos);
+				float rayMiddlePlanetDis = distance(rayMiddleplanetPos,PlanetPos);
 
 				//return float4(sceneDepth/20,sceneDepth/20,sceneDepth/20,1);
 
 				if (PlayerPlanetDis < _WaterRadius )
 				{
 					
-					float3 PlayerRelativePos = PlayerPos - _PlanetPos;
+					float3 PlayerRelativePos = PlayerPos - PlanetPos;
 
 					result.enter = PlayerRelativePos;
 					float3 endhit = GetRaySphereIntersection(_WaterRadius,rayDir*-1,PlayerRelativePos);
@@ -536,7 +552,7 @@
 				}else if(rayMiddlePlanetDis<_WaterRadius )
 				{
 					result.inWater = false;
-					float3 startHit = GetRaySphereIntersection(_WaterRadius,rayDir,rayMiddleplanetPos- _PlanetPos);
+					float3 startHit = GetRaySphereIntersection(_WaterRadius,rayDir,rayMiddleplanetPos- PlanetPos);
 					
 
 					if(distance(startHit,PlayerPos)> sceneDepth)
@@ -547,7 +563,7 @@
 					{
 						result.interacted = true;
 						result.enter = startHit;
-						float3 endhit = GetRaySphereIntersection(_WaterRadius,rayDir*-1,rayMiddleplanetPos - _PlanetPos);
+						float3 endhit = GetRaySphereIntersection(_WaterRadius,rayDir*-1,rayMiddleplanetPos - PlanetPos);
 						result.stop= min(distance(endhit,PlayerPos), sceneDepth) * rayDir + PlayerPos;
 						//float3 test = GetRaySphereIntersection(1,float3(0,0,0),float3(0,0.5,0));
 					
@@ -567,11 +583,11 @@
 				float sceneDepthNonLinear = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv);
 				float sceneDepth = LinearEyeDepth(sceneDepthNonLinear) * length(i.viewVector);
 											
-				float3 PlayerPos = _WorldSpaceCameraPos;
-				float3 rayDir = normalize(i.viewVector);
-				
-				getHit1Hit2onSphereOutput atmosphereHitsInf = getHit1Hit2onSphere( _PlanetPos, PlayerPos , rayDir , _atmosphereSize, sceneDepth);
-				getHit1Hit2onSphereOutput waterHitsInf = getHit1Hit2onSphere( _PlanetPos, PlayerPos , rayDir , _WaterRadius, sceneDepth);
+				float3 PlayerPos = _WorldSpaceCameraPos - _PlanetPos;
+				float3 rayDir = normalize(i.viewVector);				
+
+				getHit1Hit2onSphereOutput atmosphereHitsInf = getHit1Hit2onSphere( PlayerPos , rayDir , _atmosphereSize, sceneDepth);
+				getHit1Hit2onSphereOutput waterHitsInf = getHit1Hit2onSphere(  PlayerPos , rayDir , _WaterRadius, sceneDepth);
 
 				if(waterHitsInf.interacted == true)
 				{
