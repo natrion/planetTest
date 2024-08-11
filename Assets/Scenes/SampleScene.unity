@@ -410,6 +410,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0131e392249259745b33cf17880628fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  addShader: {fileID: 4800000, guid: 1edf3bde30e4aad45a701e013e2d2658, type: 3}
+  blurShader: {fileID: 4800000, guid: 88fef5720a3320248946737da9b37f7c, type: 3}
+  burAmount: 3
+  PeraformaneDownSize: 3
   depthTexture: {fileID: 0}
 --- !u!1 &1052627999
 GameObject:
@@ -514,7 +518,7 @@ Transform:
   m_GameObject: {fileID: 1052627999}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -5000}
+  m_LocalPosition: {x: 250.96309, y: -3085.2021, z: -3333.7852}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -787,120 +791,6 @@ MonoBehaviour:
   playerNostatic: {fileID: 1052627999}
   nonStatic_waterAtmosphereShaders: {fileID: 4800000, guid: b3907c4c195b6cc46b900cdbd9750d29, type: 3}
   vertextSideCountNostatic: 60
-  planet:
-    planetData:
-      PlanetTypeInfo: []
-      PlanetTypeInfoObjects: []
-      AtmosphericDrag: 0
-      planetR: 0
-      frequency: 0
-      iterations: 0
-      iterationSize: 0
-      power: 0
-      Intensity: 0
-      planetGameObject: {fileID: 0}
-      OceanFreqency: 0
-      OceanIterations: 0
-      OceanIterationSize: 0
-      OceanPower: 0
-      OceanIntensity: 0
-      valleyHight: 0
-      valleyDistortion: 0
-      valleyPower: 0
-      postProcessingMaterial: {fileID: 0}
-      waterRadius: 0
-      oceanMul: 0
-      oceanExp: 0
-      oceanBottom: 0
-      oceanHightColor:
-        serializedVersion: 2
-        key0: {r: 1, g: 1, b: 1, a: 1}
-        key1: {r: 1, g: 1, b: 1, a: 1}
-        key2: {r: 0, g: 0, b: 0, a: 0}
-        key3: {r: 0, g: 0, b: 0, a: 0}
-        key4: {r: 0, g: 0, b: 0, a: 0}
-        key5: {r: 0, g: 0, b: 0, a: 0}
-        key6: {r: 0, g: 0, b: 0, a: 0}
-        key7: {r: 0, g: 0, b: 0, a: 0}
-        ctime0: 0
-        ctime1: 65535
-        ctime2: 0
-        ctime3: 0
-        ctime4: 0
-        ctime5: 0
-        ctime6: 0
-        ctime7: 0
-        atime0: 0
-        atime1: 65535
-        atime2: 0
-        atime3: 0
-        atime4: 0
-        atime5: 0
-        atime6: 0
-        atime7: 0
-        m_Mode: 0
-        m_ColorSpace: -1
-        m_NumColorKeys: 2
-        m_NumAlphaKeys: 2
-      oceanHightColorImage: {fileID: 0}
-      WaterBlackSpotsFrequency: 0
-      WaterBlackSpotsIterations: 0
-      WaterBlackSpotsIterationSize: 0
-      WaterBlackSpotsPower: 0
-      WaterBlackSpotsIntensity: 0
-      waveStreanght: 0
-      atmosphereSize: 0
-      atmosphereDensity: 0
-      atmosphereColor: {r: 0, g: 0, b: 0, a: 0}
-      atmosphericFallof: 0
-      cloudsStepSize: 0
-      cloudsFreqency: 0
-      cloudsIterations: 0
-      cloudsIterationSize: 0
-      cloudsPower: 0
-      cloudsIntensity: 0
-      cloudsHight: 0
-      cloudsLayerWith: 0
-      cloudsLayerCentreConcetaration: 0
-      cloudColor: {r: 0, g: 0, b: 0, a: 0}
-      groundMaterial: {fileID: 0}
-      _Glossiness: 0
-      _Metallic: 0
-      _NoiseFrequency: 0
-      _NoiseIterations: 0
-      _NoiseIterationSize: 0
-      _NoisePower: 0
-      _NoiseIntensity: 0
-      _Biom1MainTex: {fileID: 0}
-      _Biom1NormalMap: {fileID: 0}
-      _Biom1CliffMainTex: {fileID: 0}
-      _Biom1CliffNormalMap: {fileID: 0}
-      _Biom2MainTex: {fileID: 0}
-      _Biom2NormalMap: {fileID: 0}
-      _Biom2CliffMainTex: {fileID: 0}
-      _Biom2CliffNormalMap: {fileID: 0}
-      _TileSize: 0
-      _transitionNum: 0
-      _CliffSize: 0
-      _BiomTransotionNum: 0
-      _BiomNoiseFrequency: 0
-      _BiomNoiseIterations: 0
-      _BiomNoiseIterationSize: 0
-      _BiomNoisePower: 0
-      _BiomNoiseIntensity: 0
-      grassMaterial: {fileID: 0}
-      TopColor: {r: 0, g: 0, b: 0, a: 0}
-      BottomColor: {r: 0, g: 0, b: 0, a: 0}
-      WindStrength: 0
-      BladeWidth: 0
-      BladeHeight: 0
-      BladeCurve: 0
-      Biom1MainTex: {r: 0, g: 0, b: 0, a: 0}
-      Biom2MainTex: {r: 0, g: 0, b: 0, a: 0}
-      BladeStiffnes: 0
-      atmosphere: {fileID: 0}
-      ocean: {fileID: 0}
-    chunks: []
   test: {fileID: 0}
   chunkGeneratingDistanceNostatic: 5
   chunkInChunkSideNostatic: 3

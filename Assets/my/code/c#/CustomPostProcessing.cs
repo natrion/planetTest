@@ -3,15 +3,41 @@ using System.Collections.Generic;
 [ExecuteInEditMode, ImageEffectAllowedInSceneView]
 public class CustomPostProcessing : MonoBehaviour
 {
+    public Shader addShader;
+    public Shader blurShader;
 
+    private Material addMaterial;
+    private Material blurMaterial;
+
+    public float burAmount;
     public static List<Material> planetsPostProcessingMaterial = new List<Material>() ;
+    public int PeraformaneDownSize;
     void OnRenderImage(RenderTexture src, RenderTexture dest)
     {
         
         if (planetsPostProcessingMaterial.Count != 0) 
         {
-            //Graphics.Blit(src, dest);
-            Graphics.Blit( src,  dest, planetsPostProcessingMaterial[0]);
+            Graphics.Blit(src, dest,planetsPostProcessingMaterial[0] );
+            /*
+            RenderTexture smallScreentexture = new RenderTexture(src.width/ PeraformaneDownSize, src.height / PeraformaneDownSize, src.depth);
+            RenderTexture atmosphereEffectTexture = new RenderTexture(src.width / PeraformaneDownSize, src.height / PeraformaneDownSize, src.depth);
+            RenderTexture atmosphereEffectUpscaled = new RenderTexture(src.width , src.height , src.depth);
+            RenderTexture bluredTexture = new RenderTexture(src.width , src.height , src.depth);
+
+            Graphics.Blit(src, smallScreentexture);
+
+            Graphics.Blit(smallScreentexture, atmosphereEffectTexture, planetsPostProcessingMaterial[0]);
+
+            Graphics.Blit(atmosphereEffectTexture, atmosphereEffectUpscaled);
+
+            Graphics.Blit(atmosphereEffectUpscaled, bluredTexture, blurMaterial);
+
+            addMaterial.SetTexture("_SecondTex", bluredTexture);
+
+            Graphics.Blit(src, dest, addMaterial);
+
+            //Graphics.Blit(atmosphereEffectUpscaled, dest);
+            */
             /*
             RenderTexture passingTexture = new RenderTexture(src.width, src.height, src.depth);
             RenderTexture passingTexture2 = new RenderTexture(src.width, src.height, src.depth);
@@ -49,6 +75,9 @@ public class CustomPostProcessing : MonoBehaviour
     public RenderTexture depthTexture ;
     private void Start()
     {
+        addMaterial = new Material(addShader);
+        blurMaterial = new Material(blurShader);
+
         gameObject.GetComponent<Camera>().depthTextureMode = DepthTextureMode.Depth;
         
         gameObject.GetComponent<Camera>().targetTexture = depthTexture;
@@ -56,7 +85,7 @@ public class CustomPostProcessing : MonoBehaviour
     }
     private void Update()
     {
-
+        blurMaterial.SetFloat("_BlurSize", burAmount);
 
         foreach (Material material in changeDapthTextureMaterials)
         {

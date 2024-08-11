@@ -35,7 +35,7 @@ Shader "Custom/atmosphere"
             #pragma vertex vert
             #pragma fragment frag
             #include "UnityCG.cginc"
-			#include "Includes/Math.cginc"
+			#include "ShaderIncludes/Math.cginc"
 
             		
 			float hash(float3 p) {

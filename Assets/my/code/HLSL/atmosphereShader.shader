@@ -18,7 +18,7 @@
 			#pragma fragment frag
 
 			#include "UnityCG.cginc"
-			#include "Includes/Math.cginc"
+			#include "ShaderIncludes/Math.cginc"
 			//
 			// Cellular noise ("Worley noise") in 3D in HLSL.
 			// Based on Stefan Gustavson's GLSL implementation.
@@ -580,6 +580,7 @@
 			float4 frag (v2f i) : SV_Target
 			{
 				float4 originalCol = tex2D(_MainTex, i.uv);
+				float4 NorChangetoriginalCol = originalCol;
 				float sceneDepthNonLinear = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv);
 				float sceneDepth = LinearEyeDepth(sceneDepthNonLinear) * length(i.viewVector);
 											
@@ -607,7 +608,7 @@
 				} 
 				
 							
-				return originalCol; 
+				return originalCol; //- NorChangetoriginalCol; 
 			}
 
 			
